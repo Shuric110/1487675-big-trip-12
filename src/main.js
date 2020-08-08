@@ -7,7 +7,7 @@ import {createTripDayListTemplate} from "./view/trip-day-list.js";
 import {createTripDayTemplate} from "./view/trip-day.js";
 import {createTripInfoTemplate} from "./view/trip-info.js";
 
-import {render} from "./util.js";
+import {render, formatDateAsDateMD} from "./util.js";
 
 import {generateEvents} from "./mock/event.js";
 import {createJourneySummary} from "./mock/summary.js";
@@ -30,11 +30,27 @@ render(tripEventsElement, `beforeend`, createSortTemplate());
 render(tripEventsElement, `beforeend`, createTripDayListTemplate());
 
 const tripDayListElement = tripEventsElement.querySelector(`.trip-days`);
-render(tripDayListElement, `beforeend`, createTripDayTemplate());
 
-const eventListElement = tripDayListElement.querySelector(`.trip-events__list`);
+let currentDate = ``;
+let currentDateNumber = 0;
+let eventListElement;
 
-render(eventListElement, `beforeend`, createEventEditorTemplate(events[0]));
-for (let i = 1; i < events.length; i++) {
-  render(eventListElement, `beforeend`, createEventTemplate(events[i]));
+let firstEvent = true;
+
+for (let evt of events) {
+  const eventDate = formatDateAsDateMD(evt.beginDateTime);
+  if (eventDate !== currentDate) {
+    currentDate = eventDate;
+    currentDateNumber++;
+    render(tripDayListElement, `beforeend`, createTripDayTemplate(currentDate, currentDateNumber));
+    const eventListElements = tripDayListElement.querySelectorAll(`.trip-events__list`);
+    eventListElement = eventListElements[eventListElements.length - 1];
+  }
+
+  if (firstEvent) {
+    render(eventListElement, `beforeend`, createEventEditorTemplate(evt));
+    firstEvent = false;
+  } else {
+    render(eventListElement, `beforeend`, createEventTemplate(evt));
+  }
 }

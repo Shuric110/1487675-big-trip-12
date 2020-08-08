@@ -43,6 +43,10 @@ export const formatDateAsTimeHM = function (date) {
   return date.getHours() + `:` + pad(date.getMinutes());
 };
 
+export const formatDateAsDateMD = function (date) {
+  return date.toLocaleString(`en-US`, {month: `short`, day: `2-digit`});
+};
+
 export const formatDateForEditor = function (date) {
   return pad(date.getDate()) +
     `/` + pad(date.getMonth() + 1) +
