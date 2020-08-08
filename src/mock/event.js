@@ -21,60 +21,60 @@ const OFFERS_MAP = {
     {
       name: `Add luggage`,
       cost: 50,
-      selected: true
+      isSelected: true
     },
     {
       name: `Switch to comfort`,
       cost: 80,
-      selected: true
+      isSelected: true
     },
     {
       name: `Add meal`,
       cost: 15,
-      selected: false
+      isSelected: false
     },
     {
       name: `Choose seats`,
       cost: 5,
-      selected: false
+      isSelected: false
     },
     {
       name: `Travel by train`,
       cost: 40,
-      selected: false
+      isSelected: false
     },
   ],
   'taxi': [
     {
       name: `Order Uber`,
       cost: 20,
-      selected: true
+      isSelected: true
     },
   ],
   'drive': [
     {
       name: `Rent a car`,
       cost: 200,
-      selected: true
+      isSelected: true
     },
   ],
   'check-in': [
     {
       name: `Add breakfast`,
       cost: 50,
-      selected: true
+      isSelected: true
     },
   ],
   'sightseeing ': [
     {
       name: `Book tickets`,
       cost: 40,
-      selected: true
+      isSelected: true
     },
     {
       name: `Lunch in city`,
       cost: 30,
-      selected: true
+      isSelected: true
     },
   ],
 };

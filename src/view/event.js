@@ -10,7 +10,7 @@ export const createEventTemplate = function (evt) {
     <h4 class="visually-hidden">Offers:</h4>
     <ul class="event__selected-offers">
       ${offers
-        .filter(({selected}) => selected)
+        .filter(({isSelected}) => isSelected)
         .slice(0, 2)
         .map(({name, cost: offerCost}) =>
           `

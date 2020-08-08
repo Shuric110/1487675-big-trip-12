@@ -10,17 +10,19 @@ import {createTripInfoTemplate} from "./view/trip-info.js";
 import {render} from "./util.js";
 
 import {generateEvents} from "./mock/event.js";
+import {createJourneySummary} from "./mock/summary.js";
 
 const EVENT_COUNT = 25;
 
 const events = generateEvents(EVENT_COUNT);
+const journeySummary = createJourneySummary(events);
 
 
 const tripMainElement = document.querySelector(`.trip-main`);
 const tripControlsElement = tripMainElement.querySelector(`.trip-controls`);
 const tripEventsElement = document.querySelector(`.trip-events`);
 
-render(tripMainElement, `afterbegin`, createTripInfoTemplate());
+render(tripMainElement, `afterbegin`, createTripInfoTemplate(journeySummary));
 render(tripControlsElement, `beforeend`, createFilterTemplate());
 render(tripControlsElement, `beforeend`, createMenuTemplate());
 

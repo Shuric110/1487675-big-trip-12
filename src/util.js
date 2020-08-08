@@ -32,15 +32,23 @@ const pad = function (number) {
 };
 
 export const formatDateAsISOString = function (date) {
-  return date.getUTCFullYear() +
-    `-` + pad(date.getUTCMonth() + 1) +
-    `-` + pad(date.getUTCDate()) +
-    `T` + pad(date.getUTCHours()) +
-    `:` + pad(date.getUTCMinutes());
+  return date.getFullYear() +
+    `-` + pad(date.getMonth() + 1) +
+    `-` + pad(date.getDate()) +
+    `T` + pad(date.getHours()) +
+    `:` + pad(date.getMinutes());
 };
 
 export const formatDateAsTimeHM = function (date) {
-  return date.getUTCHours() + `:` + pad(date.getUTCMinutes());
+  return date.getHours() + `:` + pad(date.getMinutes());
+};
+
+export const formatDateForEditor = function (date) {
+  return pad(date.getDate()) +
+    `/` + pad(date.getMonth() + 1) +
+    `/` + pad(date.getFullYear() % 100) +
+    ` ` + pad(date.getHours()) +
+    `:` + pad(date.getMinutes());
 };
 
 export const formatIntervalDuration = function (beginDate, endDate) {
@@ -62,6 +70,22 @@ export const formatIntervalDuration = function (beginDate, endDate) {
 
   result = `${duration}D ${result}`;
   return result;
+};
+
+export const formatDatesRange = function (beginDate, endDate) {
+  const beginMonth = beginDate.toLocaleString(`en-US`, {month: `short`});
+  const beginDay = beginDate.getDate();
+  const endMonth = endDate.toLocaleString(`en-US`, {month: `short`});
+  const endDay = endDate.getDate();
+
+  let beginDateStr = beginMonth + ` ` + beginDay;
+  if (beginMonth === endMonth && beginDay === endDay) {
+    return beginDateStr;
+  }
+
+  return beginDateStr + ` &mdash; ` +
+    (beginMonth === endMonth ? `` : endMonth + ` `) +
+    endDay;
 };
 
 export const render = function (container, position, template) {
