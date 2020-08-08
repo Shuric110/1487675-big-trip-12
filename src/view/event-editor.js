@@ -16,13 +16,13 @@ const createEventTypeListTemplate = function (selectedEventType) {
   return `
     <fieldset class="event__type-group">
       <legend class="visually-hidden">Transfer</legend>
-      ${Object.entries(EVENT_TYPES).filter(([, {isTrip}]) => isTrip)
+      ${Object.entries(EVENT_TYPES).filter(([, {isTransport}]) => isTransport)
         .map(([eventType, eventTypeInfo]) => createEventTypeListItemTemplate(eventType, eventTypeInfo, selectedEventType)).join(``)}
     </fieldset>
 
     <fieldset class="event__type-group">
       <legend class="visually-hidden">Activity</legend>
-      ${Object.entries(EVENT_TYPES).filter(([, {isTrip}]) => !isTrip)
+      ${Object.entries(EVENT_TYPES).filter(([, {isTransport}]) => !isTransport)
         .map(([eventType, eventTypeInfo]) => createEventTypeListItemTemplate(eventType, eventTypeInfo, selectedEventType)).join(``)}
     </fieldset>
   `;
@@ -80,7 +80,7 @@ export const createEventEditorTemplate = function (evt) {
     tomorrow.setHours(0, 0, 0, 0);
 
     evt = {
-      eventType: `flight`,
+      type: `flight`,
       destination: ``,
       beginDateTime: tomorrow,
       endDateTime: new Date(tomorrow),
@@ -90,10 +90,10 @@ export const createEventEditorTemplate = function (evt) {
     };
   }
 
-  const {eventType, destination, beginDateTime, endDateTime, cost, offers, destinationInfo} = evt;
-  const eventTypeInfo = EVENT_TYPES[eventType];
+  const {type, destination, beginDateTime, endDateTime, cost, offers, destinationInfo} = evt;
+  const eventTypeInfo = EVENT_TYPES[type];
 
-  const eventTypeListTemplate = createEventTypeListTemplate(eventType);
+  const eventTypeListTemplate = createEventTypeListTemplate(type);
 
   const offersTemplate = createOffersTemplate(offers);
   const destinationDescriptionTemplate = createDestinationDescriptionTemplate(destinationInfo);
@@ -112,7 +112,7 @@ export const createEventEditorTemplate = function (evt) {
           <div class="event__type-wrapper">
             <label class="event__type  event__type-btn" for="event-type-toggle-1">
               <span class="visually-hidden">Choose event type</span>
-              <img class="event__type-icon" width="17" height="17" src="img/icons/${eventType}.png" alt="Event type icon">
+              <img class="event__type-icon" width="17" height="17" src="img/icons/${type}.png" alt="Event type icon">
             </label>
             <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox">
 

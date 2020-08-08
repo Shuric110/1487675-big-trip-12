@@ -80,11 +80,11 @@ const OFFERS_MAP = {
 };
 
 const generateEvent = function (baseDateTime) {
-  const eventType = getRandomElement(Object.keys(EVENT_TYPES));
-  const offers = eventType in OFFERS_MAP ? OFFERS_MAP[eventType] : [];
+  const type = getRandomElement(Object.keys(EVENT_TYPES));
+  const offers = type in OFFERS_MAP ? OFFERS_MAP[type] : [];
 
   let durationMinutes = getRandomInteger(30, 180, 5);
-  const isDurationDayPlus = EVENT_TYPES[eventType].isTrip && (getRandomInteger(1, 4) === 1);
+  const isDurationDayPlus = EVENT_TYPES[type].isTransport && (getRandomInteger(1, 4) === 1);
   if (isDurationDayPlus) {
     durationMinutes += 24 * 60;
   }
@@ -101,7 +101,7 @@ const generateEvent = function (baseDateTime) {
   };
 
   return {
-    eventType,
+    type,
     destination: getRandomElement(DESTINATIONS),
     beginDateTime,
     endDateTime,

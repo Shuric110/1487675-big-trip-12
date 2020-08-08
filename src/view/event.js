@@ -2,9 +2,9 @@ import {EVENT_TYPES} from "../const.js";
 import {formatDateAsISOString, formatDateAsTimeHM, formatIntervalDuration} from "../util.js";
 
 export const createEventTemplate = function (evt) {
-  const {eventType, destination, beginDateTime, endDateTime, cost, offers} = evt;
+  const {type, destination, beginDateTime, endDateTime, cost, offers} = evt;
 
-  const eventTypeInfo = EVENT_TYPES[eventType];
+  const eventTypeInfo = EVENT_TYPES[type];
 
   const offersTemplate = offers.length === 0 ? `` : `
     <h4 class="visually-hidden">Offers:</h4>
@@ -27,7 +27,7 @@ export const createEventTemplate = function (evt) {
     <li class="trip-events__item">
       <div class="event">
         <div class="event__type">
-          <img class="event__type-icon" width="42" height="42" src="img/icons/${eventType}.png" alt="Event type icon">
+          <img class="event__type-icon" width="42" height="42" src="img/icons/${type}.png" alt="Event type icon">
         </div>
         <h3 class="event__title">${eventTypeInfo.titlePrefix}${destination}</h3>
 
