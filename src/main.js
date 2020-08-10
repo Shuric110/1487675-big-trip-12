@@ -7,31 +7,50 @@ import {createTripDayListTemplate} from "./view/trip-day-list.js";
 import {createTripDayTemplate} from "./view/trip-day.js";
 import {createTripInfoTemplate} from "./view/trip-info.js";
 
-const TRIP_COUNT = 3;
+import {render, formatDateAsDateMD} from "./util.js";
 
+import {generateEvents} from "./mock/event.js";
+import {createJourneySummary} from "./mock/summary.js";
 
-const renderTemplate = function (container, position, template) {
-  container.insertAdjacentHTML(position, template);
-};
+const EVENT_COUNT = 25;
+
+const events = generateEvents(EVENT_COUNT);
+const journeySummary = createJourneySummary(events);
 
 
 const tripMainElement = document.querySelector(`.trip-main`);
 const tripControlsElement = tripMainElement.querySelector(`.trip-controls`);
 const tripEventsElement = document.querySelector(`.trip-events`);
 
-renderTemplate(tripMainElement, `afterbegin`, createTripInfoTemplate());
-renderTemplate(tripControlsElement, `beforeend`, createFilterTemplate());
-renderTemplate(tripControlsElement, `beforeend`, createMenuTemplate());
+render(tripMainElement, `afterbegin`, createTripInfoTemplate(journeySummary));
+render(tripControlsElement, `beforeend`, createFilterTemplate());
+render(tripControlsElement, `beforeend`, createMenuTemplate());
 
-renderTemplate(tripEventsElement, `beforeend`, createSortTemplate());
-renderTemplate(tripEventsElement, `beforeend`, createTripDayListTemplate());
+render(tripEventsElement, `beforeend`, createSortTemplate());
+render(tripEventsElement, `beforeend`, createTripDayListTemplate());
 
 const tripDayListElement = tripEventsElement.querySelector(`.trip-days`);
-renderTemplate(tripDayListElement, `beforeend`, createTripDayTemplate());
 
-const eventListElement = tripDayListElement.querySelector(`.trip-events__list`);
-renderTemplate(eventListElement, `beforeend`, createEventEditorTemplate());
+let currentDate = ``;
+let currentDateNumber = 0;
+let eventListElement;
 
-for (let i = 0; i < TRIP_COUNT; i++) {
-  renderTemplate(eventListElement, `beforeend`, createEventTemplate());
+let firstEvent = true;
+
+for (let evt of events) {
+  const eventDate = formatDateAsDateMD(evt.beginDateTime);
+  if (eventDate !== currentDate) {
+    currentDate = eventDate;
+    currentDateNumber++;
+    render(tripDayListElement, `beforeend`, createTripDayTemplate(currentDate, currentDateNumber));
+    const eventListElements = tripDayListElement.querySelectorAll(`.trip-events__list`);
+    eventListElement = eventListElements[eventListElements.length - 1];
+  }
+
+  if (firstEvent) {
+    render(eventListElement, `beforeend`, createEventEditorTemplate(evt));
+    firstEvent = false;
+  } else {
+    render(eventListElement, `beforeend`, createEventTemplate(evt));
+  }
 }
