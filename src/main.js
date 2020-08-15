@@ -9,7 +9,8 @@ import TripDayListView from "./view/trip-day-list.js";
 import TripDayView from "./view/trip-day.js";
 import TripInfoView from "./view/trip-info.js";
 
-import {RenderPosition, render, formatDateAsDateMD} from "./util.js";
+import {formatDateAsDateMD, truncDate} from "./util.js";
+import {RenderPosition, render, replace} from "./util/render.js";
 
 import {generateEvents} from "./mock/event.js";
 import {createJourneySummary} from "./mock/summary.js";
@@ -23,7 +24,7 @@ const tripMainElement = document.querySelector(`.trip-main`);
 const tripControlsElement = tripMainElement.querySelector(`.trip-controls`);
 const tripMainContainerElement = document.querySelector(`main .page-body__container`);
 
-const renderEvent = function (eventListElement, evt) {
+const renderEvent = function (eventListComponent, evt) {
   const eventComponent = new EventView(evt);
   let eventEditorComponent;
 
@@ -47,13 +48,13 @@ const renderEvent = function (eventListElement, evt) {
         switchToView();
       });
 
-      eventComponent.getElement().parentNode.replaceChild(eventEditorComponent.getElement(), eventComponent.getElement());
+      replace(eventEditorComponent, eventComponent);
       document.addEventListener(`keydown`, onEscKeyDown);
     }
   };
 
   const switchToView = function () {
-    eventEditorComponent.getElement().parentNode.replaceChild(eventComponent.getElement(), eventEditorComponent.getElement());
+    replace(eventComponent, eventEditorComponent);
     eventEditorComponent = null;
     document.removeEventListener(`keydown`, onEscKeyDown);
   };
@@ -62,42 +63,41 @@ const renderEvent = function (eventListElement, evt) {
     switchToEdit();
   });
 
-  render(eventListElement, eventComponent.getElement(), RenderPosition.BEFOREEND);
+  render(eventListComponent, eventComponent, RenderPosition.BEFOREEND);
 };
 
 const renderTripEvents = function (tripEventsContainer, tripEventsList) {
-  const tripEventsElement = new TripEventsView().getElement();
-  render(tripEventsContainer, tripEventsElement, RenderPosition.BEFOREEND);
+  const tripEventsComponent = new TripEventsView();
+  render(tripEventsContainer, tripEventsComponent, RenderPosition.BEFOREEND);
 
   if (tripEventsList.length === 0) {
-    render(tripEventsElement, new NoEventsView().getElement(), RenderPosition.BEFOREEND);
+    render(tripEventsComponent, new NoEventsView(), RenderPosition.BEFOREEND);
     return;
   }
-  render(tripEventsElement, new SortView().getElement(), RenderPosition.BEFOREEND);
+  render(tripEventsComponent, new SortView(), RenderPosition.BEFOREEND);
 
-  const tripDayListElement = new TripDayListView().getElement();
-  render(tripEventsElement, tripDayListElement, RenderPosition.BEFOREEND);
+  const tripDayListComponent = new TripDayListView();
+  render(tripEventsComponent, tripDayListComponent, RenderPosition.BEFOREEND);
 
   let currentDate = ``;
   let currentDateNumber = 0;
-  let eventListElement;
+  let tripDayComponent;
 
   for (let evt of tripEventsList) {
     const eventDate = formatDateAsDateMD(evt.beginDateTime);
     if (eventDate !== currentDate) {
       currentDate = eventDate;
       currentDateNumber++;
-      const tripDayElement = new TripDayView(currentDate, currentDateNumber).getElement();
-      render(tripDayListElement, tripDayElement, RenderPosition.BEFOREEND);
-      eventListElement = tripDayElement.querySelector(`.trip-events__list`);
+      tripDayComponent = new TripDayView(truncDate(evt.beginDateTime), currentDateNumber);
+      render(tripDayListComponent, tripDayComponent, RenderPosition.BEFOREEND);
     }
 
-    renderEvent(eventListElement, evt);
+    renderEvent(tripDayComponent, evt);
   }
 };
 
-render(tripMainElement, new TripInfoView(journeySummary).getElement(), RenderPosition.AFTERBEGIN);
-render(tripControlsElement, new MenuView().getElement(), RenderPosition.BEFOREEND);
-render(tripControlsElement, new FilterView().getElement(), RenderPosition.BEFOREEND);
+render(tripMainElement, new TripInfoView(journeySummary), RenderPosition.AFTERBEGIN);
+render(tripControlsElement, new MenuView(), RenderPosition.BEFOREEND);
+render(tripControlsElement, new FilterView(), RenderPosition.BEFOREEND);
 
 renderTripEvents(tripMainContainerElement, events);

@@ -1,6 +1,6 @@
 import ComponentView from "./component.js";
 import {EVENT_TYPES} from "../const.js";
-import {formatDateAsISOString, formatDateAsTimeHM, formatIntervalDuration} from "../util.js";
+import {formatDateTimeAsISOString, formatDateAsTimeHM, formatIntervalDuration} from "../util.js";
 
 export default class Event extends ComponentView {
   constructor(evt) {
@@ -40,9 +40,9 @@ export default class Event extends ComponentView {
 
           <div class="event__schedule">
             <p class="event__time">
-              <time class="event__start-time" datetime="${formatDateAsISOString(beginDateTime)}">${formatDateAsTimeHM(beginDateTime)}</time>
+              <time class="event__start-time" datetime="${formatDateTimeAsISOString(beginDateTime)}">${formatDateAsTimeHM(beginDateTime)}</time>
               &mdash;
-              <time class="event__end-time" datetime="${formatDateAsISOString(endDateTime)}">${formatDateAsTimeHM(endDateTime)}</time>
+              <time class="event__end-time" datetime="${formatDateTimeAsISOString(endDateTime)}">${formatDateAsTimeHM(endDateTime)}</time>
             </p>
             <p class="event__duration">${formatIntervalDuration(beginDateTime, endDateTime)}</p>
           </div>

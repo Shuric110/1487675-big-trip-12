@@ -1,9 +1,3 @@
-export const RenderPosition = {
-  AFTERBEGIN: `afterbegin`,
-  BEFOREEND: `beforeend`
-};
-
-
 export const getRandomInteger = function (a = 0, b = 1, divider = 1) {
   const lower = Math.ceil(Math.min(a, b));
   const upper = Math.floor(Math.max(a, b));
@@ -37,12 +31,18 @@ const pad = function (number) {
   return number;
 };
 
-export const formatDateAsISOString = function (date) {
+export const formatDateTimeAsISOString = function (date) {
   return date.getFullYear() +
     `-` + pad(date.getMonth() + 1) +
     `-` + pad(date.getDate()) +
     `T` + pad(date.getHours()) +
     `:` + pad(date.getMinutes());
+};
+
+export const formatDateAsISOString = function (date) {
+  return date.getFullYear() +
+    `-` + pad(date.getMonth() + 1) +
+    `-` + pad(date.getDate());
 };
 
 export const formatDateAsTimeHM = function (date) {
@@ -98,27 +98,14 @@ export const formatDatesRange = function (beginDate, endDate) {
     endDay;
 };
 
+export const truncDate = function (date) {
+  const result = new Date(date);
+  result.setHours(0, 0, 0, 0);
+  return result;
+};
+
 export const getTomorrow = function () {
-  const tomorrow = new Date();
+  const tomorrow = truncDate();
   tomorrow.setDate(tomorrow.getDate() + 1);
-  tomorrow.setHours(0, 0, 0, 0);
   return tomorrow;
-};
-
-
-export const render = function (container, element, position) {
-  switch (position) {
-    case RenderPosition.AFTERBEGIN:
-      container.prepend(element);
-      break;
-    case RenderPosition.BEFOREEND:
-      container.append(element);
-      break;
-  }
-};
-
-export const createElementFromTemplate = function (template) {
-  const container = document.createElement(`div`);
-  container.innerHTML = template;
-  return container.firstElementChild;
 };

@@ -1,4 +1,4 @@
-import {createElementFromTemplate} from "../util.js";
+import {createElementFromTemplate} from "../util/render.js";
 
 export default class Component {
   constructor() {
@@ -7,6 +7,7 @@ export default class Component {
     }
 
     this._element = null;
+    this._containerElement = null;
   }
 
   getTemplate() {
@@ -21,7 +22,20 @@ export default class Component {
     return this._element;
   }
 
+  getContainerElement() {
+    if (!this._containerElement) {
+      this._containerElement = this._findContainerElement();
+    }
+
+    return this._containerElement;
+  }
+
+  _findContainerElement() {
+    return this.getElement();
+  }
+
   removeElement() {
     this._element = null;
+    this._containerElement = null;
   }
 }
