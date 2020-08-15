@@ -1,6 +1,6 @@
 import {createElementFromTemplate} from "../util.js";
 
-export default class Filter {
+export default class TripInfo {
   constructor(summary) {
     this._element = null;
     this._summary = summary;
