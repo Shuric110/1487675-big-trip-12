@@ -53,8 +53,8 @@ const renderEvent = function (evt) {
 
 
 render(tripMainElement, new TripInfoView(journeySummary).getElement(), RenderPosition.AFTERBEGIN);
-render(tripControlsElement, new FilterView().getElement(), RenderPosition.BEFOREEND);
 render(tripControlsElement, new MenuView().getElement(), RenderPosition.BEFOREEND);
+render(tripControlsElement, new FilterView().getElement(), RenderPosition.BEFOREEND);
 
 render(tripEventsElement, new SortView().getElement(), RenderPosition.BEFOREEND);
 render(tripEventsElement, new TripDayListView().getElement(), RenderPosition.BEFOREEND);
