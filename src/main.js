@@ -39,12 +39,11 @@ const renderEvent = function (eventListComponent, evt) {
     if (!eventEditorComponent) {
       eventEditorComponent = new EventEditorView(evt);
 
-      eventEditorComponent.getElement().querySelector(`form`).addEventListener(`submit`, function (submitEvt) {
-        submitEvt.preventDefault();
+      eventEditorComponent.setFormSubmitHandler(function () {
         switchToView();
       });
 
-      eventEditorComponent.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, function () {
+      eventEditorComponent.setRollupButtonClickHandler(function () {
         switchToView();
       });
 
@@ -59,7 +58,7 @@ const renderEvent = function (eventListComponent, evt) {
     document.removeEventListener(`keydown`, onEscKeyDown);
   };
 
-  eventComponent.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, function () {
+  eventComponent.setRollupButtonClickHandler(function () {
     switchToEdit();
   });
 

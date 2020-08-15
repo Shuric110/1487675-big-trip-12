@@ -174,9 +174,32 @@ export default class EventEditor extends ComponentView {
   constructor(evt) {
     super();
     this._evt = evt || BLANK_EVENT;
+
+    this._formSubmitHandler = this._formSubmitHandler.bind(this);
+    this._formRollupButtonClickHandler = this._formRollupButtonClickHandler.bind(this);
   }
 
   getTemplate() {
     return createEventEditorTemplate(this._evt);
+  }
+
+  _formSubmitHandler(evt) {
+    evt.preventDefault();
+    this._callback.formSubmit();
+  }
+
+  _formRollupButtonClickHandler(evt) {
+    evt.preventDefault();
+    this._callback.rollupButtonClick();
+  }
+
+  setFormSubmitHandler(callback) {
+    this._callback.formSubmit = callback;
+    this.getElement().querySelector(`form`).addEventListener(`submit`, this._formSubmitHandler);
+  }
+
+  setRollupButtonClickHandler(callback) {
+    this._callback.rollupButtonClick = callback;
+    this.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, this._formRollupButtonClickHandler);
   }
 }

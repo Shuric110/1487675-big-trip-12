@@ -6,6 +6,8 @@ export default class Event extends ComponentView {
   constructor(evt) {
     super();
     this._evt = evt;
+
+    this._formRollupButtonClickHandler = this._formRollupButtonClickHandler.bind(this);
   }
 
   getTemplate() {
@@ -59,5 +61,15 @@ export default class Event extends ComponentView {
         </div>
       </li>
     `;
+  }
+
+  _formRollupButtonClickHandler(evt) {
+    evt.preventDefault();
+    this._callback.rollupButtonClick();
+  }
+
+  setRollupButtonClickHandler(callback) {
+    this._callback.rollupButtonClick = callback;
+    this.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, this._formRollupButtonClickHandler);
   }
 }

@@ -8,6 +8,7 @@ export default class Component {
 
     this._element = null;
     this._containerElement = null;
+    this._callback = {};
   }
 
   getTemplate() {
