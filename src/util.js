@@ -1,3 +1,9 @@
+export const RenderPosition = {
+  AFTERBEGIN: `afterbegin`,
+  BEFOREEND: `beforeend`
+};
+
+
 export const getRandomInteger = function (a = 0, b = 1, divider = 1) {
   const lower = Math.ceil(Math.min(a, b));
   const upper = Math.floor(Math.max(a, b));
@@ -92,6 +98,32 @@ export const formatDatesRange = function (beginDate, endDate) {
     endDay;
 };
 
-export const render = function (container, position, template) {
+export const getTomorrow = function () {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  tomorrow.setHours(0, 0, 0, 0);
+  return tomorrow;
+};
+
+
+export const render = function (container, element, position) {
+  switch (position) {
+    case RenderPosition.AFTERBEGIN:
+      container.prepend(element);
+      break;
+    case RenderPosition.BEFOREEND:
+      container.append(element);
+      break;
+  }
+};
+
+export const createElementFromTemplate = function (template) {
+  const container = document.createElement(`div`);
+  container.innerHTML = template;
+  return container.firstElementChild;
+};
+
+
+export const renderTpl = function (container, position, template) {
   container.insertAdjacentHTML(position, template);
 };
