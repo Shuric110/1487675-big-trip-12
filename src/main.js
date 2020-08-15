@@ -97,7 +97,7 @@ const renderTripEvents = function (tripEventsContainer, tripEventsList) {
 };
 
 render(tripMainElement, new TripInfoView(journeySummary).getElement(), RenderPosition.AFTERBEGIN);
-render(tripControlsElement, new FilterView().getElement(), RenderPosition.BEFOREEND);
 render(tripControlsElement, new MenuView().getElement(), RenderPosition.BEFOREEND);
+render(tripControlsElement, new FilterView().getElement(), RenderPosition.BEFOREEND);
 
 renderTripEvents(tripMainContainerElement, events);
