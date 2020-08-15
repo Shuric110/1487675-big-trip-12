@@ -1,17 +1,11 @@
+import ComponentView from "./component.js";
 import {EVENT_TYPES} from "../const.js";
-import {createElementFromTemplate, formatDateAsISOString, formatDateAsTimeHM, formatIntervalDuration} from "../util.js";
+import {formatDateAsISOString, formatDateAsTimeHM, formatIntervalDuration} from "../util.js";
 
-export default class Event {
+export default class Event extends ComponentView {
   constructor(evt) {
-    this._element = null;
+    super();
     this._evt = evt;
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = createElementFromTemplate(this.getTemplate());
-    }
-    return this._element;
   }
 
   getTemplate() {

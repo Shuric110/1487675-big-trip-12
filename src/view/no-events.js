@@ -1,17 +1,6 @@
-import {createElementFromTemplate} from "../util.js";
+import ComponentView from "./component.js";
 
-export default class NoEvents {
-  constructor() {
-    this._element = null;
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = createElementFromTemplate(this.getTemplate());
-    }
-    return this._element;
-  }
-
+export default class NoEvents extends ComponentView {
   getTemplate() {
     return `<p class="trip-events__msg">Click New Event to create your first point</p>`;
   }

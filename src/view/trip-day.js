@@ -1,17 +1,10 @@
-import {createElementFromTemplate} from "../util.js";
+import ComponentView from "./component.js";
 
-export default class TripDay {
+export default class TripDay extends ComponentView {
   constructor(date, number) {
-    this._element = null;
+    super();
     this._date = date;
     this._number = number;
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = createElementFromTemplate(this.getTemplate());
-    }
-    return this._element;
   }
 
   getTemplate() {

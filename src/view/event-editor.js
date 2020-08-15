@@ -1,5 +1,6 @@
+import ComponentView from "./component.js";
 import {EVENT_TYPES} from "../const.js";
-import {createElementFromTemplate, formatDateForEditor, getTomorrow} from "../util.js";
+import {formatDateForEditor, getTomorrow} from "../util.js";
 
 const BLANK_EVENT = {
   type: `flight`,
@@ -169,17 +170,10 @@ const createEventEditorTemplate = function (evt) {
   `;
 };
 
-export default class EventEditor {
+export default class EventEditor extends ComponentView {
   constructor(evt) {
-    this._element = null;
+    super();
     this._evt = evt || BLANK_EVENT;
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = createElementFromTemplate(this.getTemplate());
-    }
-    return this._element;
   }
 
   getTemplate() {
