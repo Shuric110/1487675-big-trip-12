@@ -1,4 +1,4 @@
-import {getRandomElement, getRandomInteger} from "../util.js";
+import {getRandomElement, getRandomInteger} from "../util/common.js";
 import {EVENT_TYPES} from "../const.js";
 
 const DESTINATIONS = [`Amsterdam`, `Chamonix`, `Geneva`, `Brussels`, `Vienna`, `Salzburg`, `Insbruk`];

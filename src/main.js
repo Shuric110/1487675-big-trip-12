@@ -9,7 +9,7 @@ import TripDayListView from "./view/trip-day-list.js";
 import TripDayView from "./view/trip-day.js";
 import TripInfoView from "./view/trip-info.js";
 
-import {formatDateAsDateMD, truncDate} from "./util.js";
+import {formatDateAsDateMD, truncDate} from "./util/date.js";
 import {RenderPosition, render, replace} from "./util/render.js";
 
 import {generateEvents} from "./mock/event.js";

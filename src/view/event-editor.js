@@ -1,6 +1,6 @@
 import ComponentView from "./component.js";
 import {EVENT_TYPES} from "../const.js";
-import {formatDateForEditor, getTomorrow} from "../util.js";
+import {formatDateForEditor, getTomorrow} from "../util/date.js";
 
 const BLANK_EVENT = {
   type: `flight`,

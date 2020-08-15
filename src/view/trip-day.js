@@ -1,5 +1,5 @@
 import ComponentView from "./component.js";
-import {formatDateAsISOString, formatDateAsDateMD} from "../util.js";
+import {formatDateAsISOString, formatDateAsDateMD} from "../util/date.js";
 
 export default class TripDay extends ComponentView {
   constructor(date, number) {

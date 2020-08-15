@@ -1,6 +1,6 @@
 import ComponentView from "./component.js";
 import {EVENT_TYPES} from "../const.js";
-import {formatDateTimeAsISOString, formatDateAsTimeHM, formatIntervalDuration} from "../util.js";
+import {formatDateTimeAsISOString, formatDateAsTimeHM, formatIntervalDuration} from "../util/date.js";
 
 export default class Event extends ComponentView {
   constructor(evt) {
