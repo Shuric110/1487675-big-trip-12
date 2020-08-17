@@ -1,15 +1,32 @@
-export const createTripInfoTemplate = function ({routeSummary, journeyDates, totalCost}) {
-  return `
-    <section class="trip-main__trip-info  trip-info">
-      <div class="trip-info__main">
-        <h1 class="trip-info__title">${routeSummary}</h1>
+import {createElementFromTemplate} from "../util.js";
 
-        <p class="trip-info__dates">${journeyDates}</p>
-      </div>
+export default class TripInfo {
+  constructor(summary) {
+    this._element = null;
+    this._summary = summary;
+  }
 
-      <p class="trip-info__cost">
-        Total: &euro;&nbsp;<span class="trip-info__cost-value">${totalCost}</span>
-      </p>
-    </section>
-  `;
-};
+  getElement() {
+    if (!this._element) {
+      this._element = createElementFromTemplate(this.getTemplate());
+    }
+    return this._element;
+  }
+
+  getTemplate() {
+    const {routeSummary, journeyDates, totalCost} = this._summary;
+    return `
+      <section class="trip-main__trip-info  trip-info">
+        <div class="trip-info__main">
+          <h1 class="trip-info__title">${routeSummary}</h1>
+
+          <p class="trip-info__dates">${journeyDates}</p>
+        </div>
+
+        <p class="trip-info__cost">
+          Total: &euro;&nbsp;<span class="trip-info__cost-value">${totalCost}</span>
+        </p>
+      </section>
+    `;
+  }
+}

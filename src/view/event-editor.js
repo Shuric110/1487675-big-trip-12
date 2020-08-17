@@ -1,5 +1,15 @@
 import {EVENT_TYPES} from "../const.js";
-import {formatDateForEditor} from "../util.js";
+import {createElementFromTemplate, formatDateForEditor, getTomorrow} from "../util.js";
+
+const BLANK_EVENT = {
+  type: `flight`,
+  destination: ``,
+  beginDateTime: getTomorrow(),
+  endDateTime: getTomorrow(),
+  cost: 0,
+  offers: [],
+  destinationInfo: null
+};
 
 const createEventTypeListItemTemplate = function (eventType, eventTypeInfo, selectedEventType) {
   return `
@@ -73,23 +83,7 @@ const createDestinationDescriptionTemplate = function (destinationInfo) {
   `;
 };
 
-export const createEventEditorTemplate = function (evt) {
-  if (!evt) {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrow.setHours(0, 0, 0, 0);
-
-    evt = {
-      type: `flight`,
-      destination: ``,
-      beginDateTime: tomorrow,
-      endDateTime: new Date(tomorrow),
-      cost: 0,
-      offers: [],
-      destinationInfo: null
-    };
-  }
-
+const createEventEditorTemplate = function (evt) {
   const {type, destination, beginDateTime, endDateTime, cost, offers, destinationInfo} = evt;
   const eventTypeInfo = EVENT_TYPES[type];
 
@@ -174,3 +168,21 @@ export const createEventEditorTemplate = function (evt) {
     </li>
   `;
 };
+
+export default class EventEditor {
+  constructor(evt) {
+    this._element = null;
+    this._evt = evt || BLANK_EVENT;
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElementFromTemplate(this.getTemplate());
+    }
+    return this._element;
+  }
+
+  getTemplate() {
+    return createEventEditorTemplate(this._evt);
+  }
+}
