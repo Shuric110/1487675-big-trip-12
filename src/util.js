@@ -122,8 +122,3 @@ export const createElementFromTemplate = function (template) {
   container.innerHTML = template;
   return container.firstElementChild;
 };
-
-
-export const renderTpl = function (container, position, template) {
-  container.insertAdjacentHTML(position, template);
-};
