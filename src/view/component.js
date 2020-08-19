@@ -39,4 +39,8 @@ export default class Component {
     this._element = null;
     this._containerElement = null;
   }
+
+  getHasElement() {
+    return this._element !== null;
+  }
 }
