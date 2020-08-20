@@ -12,8 +12,12 @@ export default class TripDay extends ComponentView {
     return `
       <li class="trip-days__item  day">
         <div class="day__info">
-          <span class="day__counter">${this._number}</span>
-          <time class="day__date" datetime="${formatDateAsISOString(this._date)}">${formatDateAsDateMD(this._date)}</time>
+          ${this._number ? `
+            <span class="day__counter">${this._number}</span>
+          ` : ``}
+          ${this._date ? `
+            <time class="day__date" datetime="${formatDateAsISOString(this._date)}">${formatDateAsDateMD(this._date)}</time>
+          ` : ``}
         </div>
 
         <ul class="trip-events__list">
