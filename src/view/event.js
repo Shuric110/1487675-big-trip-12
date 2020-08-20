@@ -1,17 +1,13 @@
+import ComponentView from "./component.js";
 import {EVENT_TYPES} from "../const.js";
-import {createElementFromTemplate, formatDateAsISOString, formatDateAsTimeHM, formatIntervalDuration} from "../util.js";
+import {formatDateTimeAsISOString, formatDateAsTimeHM, formatIntervalDuration} from "../util/date.js";
 
-export default class Event {
+export default class Event extends ComponentView {
   constructor(evt) {
-    this._element = null;
+    super();
     this._evt = evt;
-  }
 
-  getElement() {
-    if (!this._element) {
-      this._element = createElementFromTemplate(this.getTemplate());
-    }
-    return this._element;
+    this._formRollupButtonClickHandler = this._formRollupButtonClickHandler.bind(this);
   }
 
   getTemplate() {
@@ -46,9 +42,9 @@ export default class Event {
 
           <div class="event__schedule">
             <p class="event__time">
-              <time class="event__start-time" datetime="${formatDateAsISOString(beginDateTime)}">${formatDateAsTimeHM(beginDateTime)}</time>
+              <time class="event__start-time" datetime="${formatDateTimeAsISOString(beginDateTime)}">${formatDateAsTimeHM(beginDateTime)}</time>
               &mdash;
-              <time class="event__end-time" datetime="${formatDateAsISOString(endDateTime)}">${formatDateAsTimeHM(endDateTime)}</time>
+              <time class="event__end-time" datetime="${formatDateTimeAsISOString(endDateTime)}">${formatDateAsTimeHM(endDateTime)}</time>
             </p>
             <p class="event__duration">${formatIntervalDuration(beginDateTime, endDateTime)}</p>
           </div>
@@ -65,5 +61,15 @@ export default class Event {
         </div>
       </li>
     `;
+  }
+
+  _formRollupButtonClickHandler(evt) {
+    evt.preventDefault();
+    this._callback.rollupButtonClick();
+  }
+
+  setRollupButtonClickHandler(callback) {
+    this._callback.rollupButtonClick = callback;
+    this.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, this._formRollupButtonClickHandler);
   }
 }

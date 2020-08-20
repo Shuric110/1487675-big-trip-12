@@ -1,17 +1,6 @@
-import {createElementFromTemplate} from "../util.js";
+import ComponentView from "./component.js";
 
-export default class Sort {
-  constructor() {
-    this._element = null;
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = createElementFromTemplate(this.getTemplate());
-    }
-    return this._element;
-  }
-
+export default class Sort extends ComponentView {
   getTemplate() {
     return `
       <form class="trip-events__trip-sort  trip-sort" action="#" method="get">

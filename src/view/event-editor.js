@@ -1,5 +1,6 @@
+import ComponentView from "./component.js";
 import {EVENT_TYPES} from "../const.js";
-import {createElementFromTemplate, formatDateForEditor, getTomorrow} from "../util.js";
+import {formatDateForEditor, getTomorrow} from "../util/date.js";
 
 const BLANK_EVENT = {
   type: `flight`,
@@ -169,20 +170,36 @@ const createEventEditorTemplate = function (evt) {
   `;
 };
 
-export default class EventEditor {
+export default class EventEditor extends ComponentView {
   constructor(evt) {
-    this._element = null;
+    super();
     this._evt = evt || BLANK_EVENT;
-  }
 
-  getElement() {
-    if (!this._element) {
-      this._element = createElementFromTemplate(this.getTemplate());
-    }
-    return this._element;
+    this._formSubmitHandler = this._formSubmitHandler.bind(this);
+    this._formRollupButtonClickHandler = this._formRollupButtonClickHandler.bind(this);
   }
 
   getTemplate() {
     return createEventEditorTemplate(this._evt);
+  }
+
+  _formSubmitHandler(evt) {
+    evt.preventDefault();
+    this._callback.formSubmit();
+  }
+
+  _formRollupButtonClickHandler(evt) {
+    evt.preventDefault();
+    this._callback.rollupButtonClick();
+  }
+
+  setFormSubmitHandler(callback) {
+    this._callback.formSubmit = callback;
+    this.getElement().querySelector(`form`).addEventListener(`submit`, this._formSubmitHandler);
+  }
+
+  setRollupButtonClickHandler(callback) {
+    this._callback.rollupButtonClick = callback;
+    this.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, this._formRollupButtonClickHandler);
   }
 }

@@ -1,17 +1,6 @@
-import {createElementFromTemplate} from "../util.js";
+import ComponentView from "./component.js";
 
-export default class TripEvents {
-  constructor() {
-    this._element = null;
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = createElementFromTemplate(this.getTemplate());
-    }
-    return this._element;
-  }
-
+export default class TripEvents extends ComponentView {
   getTemplate() {
     return `
       <section class="trip-events">

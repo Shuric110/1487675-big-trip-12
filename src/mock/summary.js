@@ -1,4 +1,4 @@
-import {formatDatesRange} from "../util.js";
+import {formatDatesRange} from "../util/date.js";
 
 export const createJourneySummary = function (events) {
   if (events.length === 0) {

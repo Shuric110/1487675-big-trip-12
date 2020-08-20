@@ -1,17 +1,11 @@
-import {createElementFromTemplate} from "../util.js";
+import ComponentView from "./component.js";
+import {formatDateAsISOString, formatDateAsDateMD} from "../util/date.js";
 
-export default class TripDay {
+export default class TripDay extends ComponentView {
   constructor(date, number) {
-    this._element = null;
+    super();
     this._date = date;
     this._number = number;
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = createElementFromTemplate(this.getTemplate());
-    }
-    return this._element;
   }
 
   getTemplate() {
@@ -19,12 +13,16 @@ export default class TripDay {
       <li class="trip-days__item  day">
         <div class="day__info">
           <span class="day__counter">${this._number}</span>
-          <time class="day__date" datetime="2019-03-18">${this._date}</time>
+          <time class="day__date" datetime="${formatDateAsISOString(this._date)}">${formatDateAsDateMD(this._date)}</time>
         </div>
 
         <ul class="trip-events__list">
         </ul>
       </li>
     `;
+  }
+
+  _findContainerElement() {
+    return this.getElement().querySelector(`.trip-events__list`);
   }
 }
