@@ -79,6 +79,15 @@ const OFFERS_MAP = {
   ],
 };
 
+const eventIdSequence = {
+  _currentValue: 0,
+
+  getNextValue() {
+    this._currentValue++;
+    return `event-` + this._currentValue;
+  }
+};
+
 const generateEvent = function (baseDateTime) {
   const type = getRandomElement(Object.keys(EVENT_TYPES));
   const offers = type in OFFERS_MAP ? OFFERS_MAP[type] : [];
@@ -101,11 +110,13 @@ const generateEvent = function (baseDateTime) {
   };
 
   return {
+    id: eventIdSequence.getNextValue(),
     type,
     destination: getRandomElement(DESTINATIONS),
     beginDateTime,
     endDateTime,
     cost: getRandomInteger(20, 600, 10),
+    isFavorite: Boolean(getRandomInteger(0, 1)),
     offers,
     destinationInfo
   };

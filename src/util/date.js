@@ -24,6 +24,9 @@ export const formatDateAsTimeHM = function (date) {
 };
 
 export const formatDateAsDateMD = function (date) {
+  if (!date) {
+    return ``;
+  }
   return date.toLocaleString(`en-US`, {month: `short`, day: `2-digit`});
 };
 

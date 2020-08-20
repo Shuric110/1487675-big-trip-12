@@ -30,7 +30,7 @@ export const render = function (container, element, position) {
   }
 };
 
-export const replace = (newChild, oldChild) => {
+export const replace = function (newChild, oldChild) {
   if (oldChild instanceof ComponentView) {
     oldChild = oldChild.getElement();
   }
@@ -48,7 +48,27 @@ export const replace = (newChild, oldChild) => {
   parent.replaceChild(newChild, oldChild);
 };
 
-export const remove = (component) => {
+export const replaceOrRender = function (container, newChild, oldChild, position) {
+  if (container instanceof ComponentView) {
+    container = container.getContainerElement();
+  }
+
+  if (oldChild instanceof ComponentView) {
+    oldChild = oldChild.getElement();
+  }
+
+  if (oldChild !== null && container.contains(oldChild)) {
+    replace(newChild, oldChild);
+  } else {
+    render(container, newChild, position);
+  }
+};
+
+export const remove = function (component) {
+  if (!component) {
+    return;
+  }
+
   if (!(component instanceof ComponentView)) {
     throw new Error(`Can remove only components`);
   }
