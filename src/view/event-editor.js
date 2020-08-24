@@ -1,4 +1,4 @@
-import ComponentView from "./component.js";
+import SmartComponentView from "./smart-component.js";
 import {EVENT_TYPES} from "../const.js";
 import {formatDateForEditor, getTomorrow} from "../util/date.js";
 
@@ -8,6 +8,7 @@ const BLANK_EVENT = {
   beginDateTime: getTomorrow(),
   endDateTime: getTomorrow(),
   cost: 0,
+  isFavorite: false,
   offers: [],
   destinationInfo: null
 };
@@ -18,7 +19,7 @@ const createEventTypeListItemTemplate = function (eventType, eventTypeInfo, sele
       <input id="event-type-${eventType}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${eventType}"
         ${eventType === selectedEventType ? `checked` : ``}
       >
-      <label class="event__type-label  event__type-label--${eventType}" for="event-type-${eventType}-1">${eventTypeInfo.displayName}1</label>
+      <label class="event__type-label  event__type-label--${eventType}" for="event-type-${eventType}-1">${eventTypeInfo.displayName}</label>
     </div>
   `;
 };
@@ -39,12 +40,13 @@ const createEventTypeListTemplate = function (selectedEventType) {
   `;
 };
 
-const createOfferTemplate = function (offer) {
+const createOfferTemplate = function (offer, index) {
   const {name, cost, isSelected} = offer;
   return `
     <div class="event__offer-selector">
-      <input class="event__offer-checkbox  visually-hidden" id="event-offer-luggage-1" type="checkbox" name="event-offer-luggage" ${isSelected ? `checked` : ``}>
-      <label class="event__offer-label" for="event-offer-luggage-1">
+      <input class="event__offer-checkbox  visually-hidden" id="event-offer-luggage-${index}" type="checkbox"
+        name="event-offer-luggage" data-index="${index}" ${isSelected ? `checked` : ``}>
+      <label class="event__offer-label" for="event-offer-luggage-${index}">
         <span class="event__offer-title">${name}</span>
         &plus;
         &euro;&nbsp;<span class="event__offer-price">${cost}</span>
@@ -59,14 +61,14 @@ const createOffersTemplate = function (offers) {
       <h3 class="event__section-title  event__section-title--offers">Offers</h3>
 
       <div class="event__available-offers">
-        ${offers.map((offer) => createOfferTemplate(offer)).join(``)}
+        ${offers.map((offer, index) => createOfferTemplate(offer, index)).join(``)}
       </div>
     </section>
   `;
 };
 
 const createDestinationDescriptionTemplate = function (destinationInfo) {
-  return destinationInfo === null ? `` : `
+  return !destinationInfo ? `` : `
     <section class="event__section  event__section--destination">
       <h3 class="event__section-title  event__section-title--destination">Destination</h3>
       <p class="event__destination-description">${destinationInfo.description}</p>
@@ -84,11 +86,22 @@ const createDestinationDescriptionTemplate = function (destinationInfo) {
   `;
 };
 
-const createEventEditorTemplate = function (evt) {
-  const {type, destination, beginDateTime, endDateTime, cost, offers, destinationInfo} = evt;
+const createDestinationsListTemplate = function (destinationsList) {
+  return `
+    <datalist id="destination-list-1">
+      ${destinationsList.map((destination) => `
+        <option value="${destination}"></option>
+      `).join(``)}
+    </datalist>
+  `;
+};
+
+const createEventEditorTemplate = function (data) {
+  const {type, destination, beginDateTime, endDateTime, cost, isFavorite, offers, destinationInfo, destinationsList} = data;
   const eventTypeInfo = EVENT_TYPES[type];
 
   const eventTypeListTemplate = createEventTypeListTemplate(type);
+  const destinationsListTemplate = createDestinationsListTemplate(destinationsList);
 
   const offersTemplate = createOffersTemplate(offers);
   const destinationDescriptionTemplate = createDestinationDescriptionTemplate(destinationInfo);
@@ -121,11 +134,7 @@ const createEventEditorTemplate = function (evt) {
               ${eventTypeInfo.titlePrefix}
             </label>
             <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination}" list="destination-list-1">
-            <datalist id="destination-list-1">
-              <option value="Amsterdam"></option>
-              <option value="Geneva"></option>
-              <option value="Chamonix"></option>
-            </datalist>
+            ${destinationsListTemplate}
           </div>
 
           <div class="event__field-group  event__field-group--time">
@@ -151,7 +160,7 @@ const createEventEditorTemplate = function (evt) {
           <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
           <button class="event__reset-btn" type="reset">Delete</button>
 
-          <input id="event-favorite-1" class="event__favorite-checkbox  visually-hidden" type="checkbox" name="event-favorite" checked>
+          <input id="event-favorite-1" class="event__favorite-checkbox  visually-hidden" type="checkbox" name="event-favorite" ${isFavorite ? `checked` : ``}>
           <label class="event__favorite-btn" for="event-favorite-1">
             <span class="visually-hidden">Add to favorite</span>
             <svg class="event__favorite-icon" width="28" height="28" viewBox="0 0 28 28">
@@ -170,17 +179,75 @@ const createEventEditorTemplate = function (evt) {
   `;
 };
 
-export default class EventEditor extends ComponentView {
-  constructor(evt) {
+export default class EventEditor extends SmartComponentView {
+  constructor(evt = BLANK_EVENT, destinationInfoCallback, destinationsListCallback, specialOffersCallback) {
     super();
-    this._evt = evt || BLANK_EVENT;
+
+    this._destinationInfoCallback = destinationInfoCallback;
+    this._destinationsListCallback = destinationsListCallback;
+    this._specialOffersCallback = specialOffersCallback;
 
     this._formSubmitHandler = this._formSubmitHandler.bind(this);
     this._formRollupButtonClickHandler = this._formRollupButtonClickHandler.bind(this);
+
+    this._typeChangeHandler = this._typeChangeHandler.bind(this);
+    this._destinationChangeHandler = this._destinationChangeHandler.bind(this);
+    this._priceChangeHandler = this._priceChangeHandler.bind(this);
+    this._favouriteClickHandler = this._favouriteClickHandler.bind(this);
+    this._offerClickHandler = this._offerClickHandler.bind(this);
+
+    this._data = this.convertEventToData(evt);
   }
 
   getTemplate() {
-    return createEventEditorTemplate(this._evt);
+    return createEventEditorTemplate(this._data);
+  }
+
+  getDestinationInfo(destination) {
+    const result = this._destinationInfoCallback ? this._destinationInfoCallback(destination) : null;
+    return result ? Object.assign({}, result) : null;
+  }
+
+  getDestinationsList() {
+    return this._destinationsListCallback ? this._destinationsListCallback() : [];
+  }
+
+  getSpecialOffers(eventType) {
+    return this._specialOffersCallback ? this._specialOffersCallback(eventType) : [];
+  }
+
+  _setInnerHandlers() {
+    this.getElement().querySelector(`.event__type-list`).addEventListener(`change`, this._typeChangeHandler);
+    this.getElement().querySelector(`.event__input--destination`).addEventListener(`change`, this._destinationChangeHandler);
+    this.getElement().querySelector(`.event__input--price`).addEventListener(`change`, this._priceChangeHandler);
+    this.getElement().querySelector(`.event__favorite-btn`).addEventListener(`click`, this._favouriteClickHandler);
+
+    if (this._data.offers.length > 0) {
+      this.getElement().querySelector(`.event__available-offers`).addEventListener(`click`, this._offerClickHandler);
+    }
+  }
+
+  _typeChangeHandler(evt) {
+    if (evt.target.value) {
+      evt.preventDefault();
+      this._updateData({
+        type: evt.target.value,
+        offers: this.getSpecialOffers(evt.target.value)
+      });
+    }
+  }
+
+  _destinationChangeHandler(evt) {
+    evt.preventDefault();
+    this._updateData({
+      destination: evt.target.value,
+      destinationInfo: this.getDestinationInfo(evt.target.value)
+    });
+  }
+
+  _priceChangeHandler(evt) {
+    evt.preventDefault();
+    this._updateData({cost: evt.target.value}, true);
   }
 
   _formSubmitHandler(evt) {
@@ -193,6 +260,26 @@ export default class EventEditor extends ComponentView {
     this._callback.rollupButtonClick();
   }
 
+  _favouriteClickHandler(evt) {
+    evt.preventDefault();
+    this._updateData({isFavorite: !this._data.isFavorite});
+    if (this._callback.favoriteClick) {
+      this._callback.favoriteClick();
+    }
+  }
+
+  _offerClickHandler(evt) {
+    if (`index` in evt.target.dataset) {
+      const offers = this._data.offers.slice();
+      offers[evt.target.dataset.index] = Object.assign(
+          {},
+          offers[evt.target.dataset.index],
+          {isSelected: !offers[evt.target.dataset.index].isSelected}
+      );
+      this._updateData({offers}, true);
+    }
+  }
+
   setFormSubmitHandler(callback) {
     this._callback.formSubmit = callback;
     this.getElement().querySelector(`form`).addEventListener(`submit`, this._formSubmitHandler);
@@ -201,5 +288,29 @@ export default class EventEditor extends ComponentView {
   setRollupButtonClickHandler(callback) {
     this._callback.rollupButtonClick = callback;
     this.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, this._formRollupButtonClickHandler);
+  }
+
+  setFavoriteClickHandler(callback) {
+    this._callback.favoriteClick = callback;
+  }
+
+  convertEventToData(evt) {
+    return Object.assign(
+        {},
+        evt,
+        {
+          destinationInfo: this.getDestinationInfo(evt.destination),
+          destinationsList: this.getDestinationsList()
+        }
+    );
+  }
+
+  convertDataToEvent(data) {
+    const result = Object.assign({}, data);
+
+    delete result.destinationInfo;
+    delete result.destinationsList;
+
+    return result;
   }
 }

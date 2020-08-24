@@ -23,3 +23,11 @@ export const escapeHtml = function (html) {
     .replace(/"/g, `&quot;`)
     .replace(/'/g, `&#039;`);
 };
+
+export const updateItem = function (items, update) {
+  const index = items.findIndex((item) => item.id === update.id);
+
+  if (index >= 0) {
+    items[index] = update;
+  }
+};

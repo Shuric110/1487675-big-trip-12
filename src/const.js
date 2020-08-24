@@ -4,6 +4,19 @@ export const SortMode = {
   PRICE: `price`,
 };
 
+export const EventType = {
+  TAXI: `taxi`,
+  BUS: `bus`,
+  TRAIN: `train`,
+  SHIP: `ship`,
+  TRANSPORT: `transport`,
+  DRIVE: `drive`,
+  FLIGHT: `flight`,
+  CHECK_IN: `check-in`,
+  SIGHTSEEING: `sightseeing`,
+  RESTAURANT: `restaurant`
+};
+
 export const SORT_TYPES = {
   [SortMode.EVENT]: {
     title: `Event`,
@@ -24,52 +37,52 @@ export const SORT_TYPES = {
 };
 
 export const EVENT_TYPES = {
-  'taxi': {
+  [EventType.TAXI]: {
     displayName: `Taxi`,
     titlePrefix: `Taxi to `,
     isTransport: true
   },
-  'bus': {
+  [EventType.BUS]: {
     displayName: `Bus`,
     titlePrefix: `Bus to `,
     isTransport: true
   },
-  'train': {
+  [EventType.TRAIN]: {
     displayName: `Train`,
     titlePrefix: `Train to `,
     isTransport: true
   },
-  'ship': {
+  [EventType.SHIP]: {
     displayName: `Ship`,
     titlePrefix: `Ship to `,
     isTransport: true
   },
-  'transport': {
+  [EventType.TRANSPORT]: {
     displayName: `Transport`,
     titlePrefix: `Transport to `,
     isTransport: true
   },
-  'drive': {
+  [EventType.DRIVE]: {
     displayName: `Drive`,
     titlePrefix: `Drive to `,
     isTransport: true
   },
-  'flight': {
+  [EventType.FLIGHT]: {
     displayName: `Flight`,
     titlePrefix: `Flight to `,
     isTransport: true
   },
-  'check-in': {
+  [EventType.CHECK_IN]: {
     displayName: `Check-in`,
     titlePrefix: `Check-in in `,
     isTransport: false
   },
-  'sightseeing': {
+  [EventType.SIGHTSEEING]: {
     displayName: `Sightseeing`,
     titlePrefix: `Sightseeing in `,
     isTransport: false
   },
-  'restaurant': {
+  [EventType.RESTAURANT]: {
     displayName: `Restaurant`,
     titlePrefix: `Restaurant in `,
     isTransport: false

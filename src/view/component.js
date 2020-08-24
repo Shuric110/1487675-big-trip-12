@@ -15,9 +15,13 @@ export default class Component {
     throw new Error(`Abstract method not implemented: getTemplate`);
   }
 
+  _createElement() {
+    this._element = createElementFromTemplate(this.getTemplate());
+  }
+
   getElement() {
     if (!this._element) {
-      this._element = createElementFromTemplate(this.getTemplate());
+      this._createElement();
     }
 
     return this._element;

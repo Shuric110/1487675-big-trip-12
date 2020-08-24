@@ -1,13 +1,13 @@
-import EventEditorView from "../view/event-editor.js";
-import EventView from "../view/event.js";
 import SortView from "../view/sort.js";
 import TripEventsView from "../view/trip-events.js";
 import NoEventsView from "../view/no-events.js";
 import TripDayListView from "../view/trip-day-list.js";
-import TripDayView from "../view/trip-day.js";
 
-import {formatDateAsDateMD, truncDate} from "../util/date.js";
+import TripDayPresenter from "./trip-day.js";
+
+import {truncDate} from "../util/date.js";
 import {RenderPosition, render, replace} from "../util/render.js";
+import {updateItem} from "../util/common.js";
 import {SortMode, SORT_TYPES} from "../const.js";
 
 
@@ -15,7 +15,12 @@ export default class Trip {
   constructor(container) {
     this._tripContainer = container;
 
+    this._tripDayPresenters = {};
+    this._eventPresenters = {};
     this._sortMode = `event`;
+    this._destinationsInfo = {};
+    this._destinationsList = [];
+    this._specialOffersList = {};
 
     this._tripEventsComponent = new TripEventsView();
     this._noEventsComponent = new NoEventsView();
@@ -23,6 +28,12 @@ export default class Trip {
     this._tripDayListComponent = new TripDayListView();
 
     this._onSortChange = this._onSortChange.bind(this);
+    this._onTripEventDataChange = this._onTripEventDataChange.bind(this);
+    this._onTripEventModeChange = this._onTripEventModeChange.bind(this);
+
+    this.getDestinationInfo = this.getDestinationInfo.bind(this);
+    this.getDestinationsList = this.getDestinationsList.bind(this);
+    this.getSpecialOffers = this.getSpecialOffers.bind(this);
   }
 
   init(events) {
@@ -32,45 +43,40 @@ export default class Trip {
     this._renderTrip();
   }
 
-  _renderEvent(eventContainerComponent, evt) {
-    const eventComponent = new EventView(evt);
-    let eventEditorComponent;
+  setDestinationsInfo(destinationsInfo) {
+    this._destinationsInfo = destinationsInfo;
+  }
 
-    const onEscKeyDown = function (keyboardEvt) {
-      if (keyboardEvt.key === `Escape` || keyboardEvt.key === `Esc`) {
-        keyboardEvt.preventDefault();
-        switchToView();
-      }
-    };
+  setDestinationsList(destinationsList) {
+    this._destinationsList = destinationsList;
+  }
 
-    const switchToEdit = function () {
-      if (!eventEditorComponent) {
-        eventEditorComponent = new EventEditorView(evt);
+  setSpecialOffersList(specialOffersList) {
+    this._specialOffersList = specialOffersList;
+  }
 
-        eventEditorComponent.setFormSubmitHandler(function () {
-          switchToView();
-        });
+  getDestinationInfo(destination) {
+    return this._destinationsInfo[destination];
+  }
 
-        eventEditorComponent.setRollupButtonClickHandler(function () {
-          switchToView();
-        });
+  getDestinationsList() {
+    return this._destinationsList;
+  }
 
-        replace(eventEditorComponent, eventComponent);
-        document.addEventListener(`keydown`, onEscKeyDown);
-      }
-    };
+  getSpecialOffers(eventType) {
+    return this._specialOffersList[eventType] || [];
+  }
 
-    const switchToView = function () {
-      replace(eventComponent, eventEditorComponent);
-      eventEditorComponent = null;
-      document.removeEventListener(`keydown`, onEscKeyDown);
-    };
-
-    eventComponent.setRollupButtonClickHandler(function () {
-      switchToEdit();
-    });
-
-    render(eventContainerComponent, eventComponent, RenderPosition.BEFOREEND);
+  _renderTripDay(date, number, tripEvents) {
+    const tripDayPresenter = new TripDayPresenter(this._tripDayListComponent, date, number);
+    this._tripDayPresenters[`day-` + date] = tripDayPresenter;
+    tripDayPresenter.setTripEventDataChangeHandler(this._onTripEventDataChange);
+    tripDayPresenter.setTripEventModeChangeHandler(this._onTripEventModeChange);
+    tripDayPresenter.setDestinationInfoCallback(this.getDestinationInfo);
+    tripDayPresenter.setDestinationsListCallback(this.getDestinationsList);
+    tripDayPresenter.setSpecialOffersCallback(this.getSpecialOffers);
+    tripDayPresenter.init(tripEvents);
+    Object.assign(this._eventPresenters, tripDayPresenter.getEventPresenters());
   }
 
   _renderNoEvents() {
@@ -93,33 +99,32 @@ export default class Trip {
   }
 
   _renderEvents() {
-    let currentDate = ``;
-    let currentDateNumber = 0;
-    let tripDayComponent;
-    const separateDays = this._sortMode === SortMode.EVENT;
+    if (this._sortMode !== SortMode.EVENT) {
+      this._renderTripDay(null, null, this._events.slice());
+    } else {
+      const eventsByDate = {};
 
-    if (!separateDays) {
-      tripDayComponent = new TripDayView(null, null);
-      render(this._tripDayListComponent, tripDayComponent, RenderPosition.BEFOREEND);
-    }
-
-    for (let evt of this._events) {
-      if (separateDays) {
-        const eventDate = formatDateAsDateMD(evt.beginDateTime);
-        if (eventDate !== currentDate) {
-          currentDate = eventDate;
-          currentDateNumber++;
-          tripDayComponent = new TripDayView(truncDate(evt.beginDateTime), currentDateNumber);
-          render(this._tripDayListComponent, tripDayComponent, RenderPosition.BEFOREEND);
+      for (let evt of this._events) {
+        const eventDate = truncDate(evt.beginDateTime).getTime();
+        if (!eventsByDate[eventDate]) {
+          eventsByDate[eventDate] = [evt];
+        } else {
+          eventsByDate[eventDate].push(evt);
         }
       }
 
-      this._renderEvent(tripDayComponent, evt);
+      Object.entries(eventsByDate).forEach(([date, dayEvents], index) => {
+        this._renderTripDay(new Date(+date), index + 1, dayEvents);
+      });
     }
   }
 
   _clearEvents() {
-    this._tripDayListComponent.getContainerElement().innerHTML = ``;
+    Object.values(this._tripDayPresenters).forEach(function (tripDayPresenter) {
+      tripDayPresenter.destroy();
+    });
+    this._tripDayPresenters = {};
+    this._eventPresenters = {};
   }
 
   _sortEvents(sortMode) {
@@ -140,9 +145,27 @@ export default class Trip {
     }
 
     this._sortEvents(sortMode);
+
     this._clearEvents();
     this._renderEvents();
+
     this._renderSort();
+  }
+
+  _onTripEventDataChange(newEvent, isEditing) {
+    updateItem(this._events, newEvent);
+    updateItem(this._sourceEvents, newEvent);
+    if (!isEditing) {
+      this._eventPresenters[newEvent.id].init(newEvent);
+    }
+  }
+
+  _onTripEventModeChange(tripEventEditorPresenter, isEditing) {
+    if (isEditing) {
+      Object.values(this._eventPresenters).forEach(function (eventPresenter) {
+        eventPresenter.resetView();
+      });
+    }
   }
 
   _renderTrip() {

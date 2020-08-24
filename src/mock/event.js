@@ -1,23 +1,9 @@
 import {getRandomElement, getRandomInteger} from "../util/common.js";
-import {EVENT_TYPES} from "../const.js";
+import {EventType, EVENT_TYPES} from "../const.js";
+import {DESTINATIONS} from "./destination.js";
 
-const DESTINATIONS = [`Amsterdam`, `Chamonix`, `Geneva`, `Brussels`, `Vienna`, `Salzburg`, `Insbruk`];
-const DESCRIPTION_TEXT = [
-  `Lorem ipsum dolor sit amet, consectetur adipiscing elit.`,
-  `Cras aliquet varius magna, non porta ligula feugiat eget.`,
-  `Fusce tristique felis at fermentum pharetra.`,
-  `Aliquam id orci ut lectus varius viverra.`,
-  `Nullam nunc ex, convallis sed finibus eget, sollicitudin eget ante.`,
-  `Phasellus eros mauris, condimentum sed nibh vitae, sodales efficitur ipsum.`,
-  `Sed blandit, eros vel aliquam faucibus, purus ex euismod diam, eu luctus nunc ante ut dui.`,
-  `Sed sed nisi sed augue convallis suscipit in sed felis.`,
-  `Aliquam erat volutpat.`,
-  `Nunc fermentum tortor ac porta dapibus.`,
-  `In rutrum ac purus sit amet tempus.`,
-];
-
-const OFFERS_MAP = {
-  'flight': [
+export const EVENT_OFFERS = {
+  [EventType.FLIGHT]: [
     {
       name: `Add luggage`,
       cost: 50,
@@ -44,28 +30,28 @@ const OFFERS_MAP = {
       isSelected: false
     },
   ],
-  'taxi': [
+  [EventType.TAXI]: [
     {
       name: `Order Uber`,
       cost: 20,
       isSelected: true
     },
   ],
-  'drive': [
+  [EventType.DRIVE]: [
     {
       name: `Rent a car`,
       cost: 200,
       isSelected: true
     },
   ],
-  'check-in': [
+  [EventType.CHECK_IN]: [
     {
       name: `Add breakfast`,
       cost: 50,
       isSelected: true
     },
   ],
-  'sightseeing ': [
+  [EventType.SIGHTSEEING]: [
     {
       name: `Book tickets`,
       cost: 40,
@@ -79,9 +65,18 @@ const OFFERS_MAP = {
   ],
 };
 
+const eventIdSequence = {
+  _currentValue: 0,
+
+  getNextValue() {
+    this._currentValue++;
+    return `event-` + this._currentValue;
+  }
+};
+
 const generateEvent = function (baseDateTime) {
   const type = getRandomElement(Object.keys(EVENT_TYPES));
-  const offers = type in OFFERS_MAP ? OFFERS_MAP[type] : [];
+  const offers = type in EVENT_OFFERS ? EVENT_OFFERS[type] : [];
 
   let durationMinutes = getRandomInteger(30, 180, 5);
   const isDurationDayPlus = EVENT_TYPES[type].isTransport && (getRandomInteger(1, 4) === 1);
@@ -95,19 +90,15 @@ const generateEvent = function (baseDateTime) {
   const endDateTime = new Date(beginDateTime);
   endDateTime.setMinutes(endDateTime.getMinutes() + durationMinutes);
 
-  const destinationInfo = {
-    photos: new Array(getRandomInteger(1, 3)).fill().map(() => `http://picsum.photos/248/152?r=${Math.random()}`),
-    description: new Array(getRandomInteger(1, 5)).fill().map(() => getRandomElement(DESCRIPTION_TEXT)).join(` `)
-  };
-
   return {
+    id: eventIdSequence.getNextValue(),
     type,
     destination: getRandomElement(DESTINATIONS),
     beginDateTime,
     endDateTime,
     cost: getRandomInteger(20, 600, 10),
-    offers,
-    destinationInfo
+    isFavorite: Boolean(getRandomInteger(0, 1)),
+    offers
   };
 };
 
