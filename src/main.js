@@ -7,11 +7,13 @@ import TripPresenter from "./presenter/trip.js";
 import {RenderPosition, render} from "./util/render.js";
 
 import {generateEvents} from "./mock/event.js";
+import {generateDestinationsInfo} from "./mock/destination.js";
 import {createJourneySummary} from "./mock/summary.js";
 
 const EVENT_COUNT = 25;
 
 const events = generateEvents(EVENT_COUNT);
+const destinationsInfo = generateDestinationsInfo();
 const journeySummary = createJourneySummary(events);
 
 const tripMainElement = document.querySelector(`.trip-main`);
@@ -25,4 +27,5 @@ render(tripMainElement, new TripInfoView(journeySummary), RenderPosition.AFTERBE
 render(tripControlsElement, new MenuView(), RenderPosition.BEFOREEND);
 render(tripControlsElement, new FilterView(), RenderPosition.BEFOREEND);
 
+tripPresenter.setDestinationsInfo(destinationsInfo);
 tripPresenter.init(events);

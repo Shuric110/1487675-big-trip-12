@@ -1,4 +1,4 @@
-import ComponentView from "./component.js";
+import SmartComponentView from "./smart-component.js";
 import {EVENT_TYPES} from "../const.js";
 import {formatDateForEditor, getTomorrow} from "../util/date.js";
 
@@ -40,11 +40,12 @@ const createEventTypeListTemplate = function (selectedEventType) {
   `;
 };
 
-const createOfferTemplate = function (offer) {
+const createOfferTemplate = function (offer, index) {
   const {name, cost, isSelected} = offer;
   return `
     <div class="event__offer-selector">
-      <input class="event__offer-checkbox  visually-hidden" id="event-offer-luggage-1" type="checkbox" name="event-offer-luggage" ${isSelected ? `checked` : ``}>
+      <input class="event__offer-checkbox  visually-hidden" id="event-offer-luggage-1" type="checkbox"
+        name="event-offer-luggage" data-index="${index}" ${isSelected ? `checked` : ``}>
       <label class="event__offer-label" for="event-offer-luggage-1">
         <span class="event__offer-title">${name}</span>
         &plus;
@@ -60,14 +61,14 @@ const createOffersTemplate = function (offers) {
       <h3 class="event__section-title  event__section-title--offers">Offers</h3>
 
       <div class="event__available-offers">
-        ${offers.map((offer) => createOfferTemplate(offer)).join(``)}
+        ${offers.map((offer, index) => createOfferTemplate(offer, index)).join(``)}
       </div>
     </section>
   `;
 };
 
 const createDestinationDescriptionTemplate = function (destinationInfo) {
-  return destinationInfo === null ? `` : `
+  return !destinationInfo ? `` : `
     <section class="event__section  event__section--destination">
       <h3 class="event__section-title  event__section-title--destination">Destination</h3>
       <p class="event__destination-description">${destinationInfo.description}</p>
@@ -86,8 +87,9 @@ const createDestinationDescriptionTemplate = function (destinationInfo) {
 };
 
 const createEventEditorTemplate = function (evt) {
-  const {type, destination, beginDateTime, endDateTime, cost, isFavorite, offers, destinationInfo} = evt;
+  const {type, destination, beginDateTime, endDateTime, cost, isFavorite, offers, getDestinationInfo} = evt;
   const eventTypeInfo = EVENT_TYPES[type];
+  const destinationInfo = getDestinationInfo(destination);
 
   const eventTypeListTemplate = createEventTypeListTemplate(type);
 
@@ -171,18 +173,63 @@ const createEventEditorTemplate = function (evt) {
   `;
 };
 
-export default class EventEditor extends ComponentView {
-  constructor(evt) {
+export default class EventEditor extends SmartComponentView {
+  constructor(evt = BLANK_EVENT) {
     super();
-    this._evt = evt || BLANK_EVENT;
+
+    this._destinationInfoHandler = null;
 
     this._formSubmitHandler = this._formSubmitHandler.bind(this);
     this._formRollupButtonClickHandler = this._formRollupButtonClickHandler.bind(this);
+    this.getDestinationInfo = this.getDestinationInfo.bind(this);
+
+    this._typeChangeHandler = this._typeChangeHandler.bind(this);
+    this._destinationChangeHandler = this._destinationChangeHandler.bind(this);
+    this._priceChangeHandler = this._priceChangeHandler.bind(this);
     this._favoriteClickHandler = this._favoriteClickHandler.bind(this);
+    this._offerClickHandler = this._offerClickHandler.bind(this);
+
+    this._data = this.convertEventToData(evt);
   }
 
   getTemplate() {
-    return createEventEditorTemplate(this._evt);
+    return createEventEditorTemplate(this._data);
+  }
+
+  setDestinationInfoHandler(destinationInfoHandler) {
+    this._destinationInfoHandler = destinationInfoHandler;
+  }
+
+  getDestinationInfo(destination) {
+    return this._destinationInfoHandler ? this._destinationInfoHandler(destination) : null;
+  }
+
+  _setInnerHandlers() {
+    this.getElement().querySelector(`.event__type-list`).addEventListener(`change`, this._typeChangeHandler);
+    this.getElement().querySelector(`.event__input--destination`).addEventListener(`change`, this._destinationChangeHandler);
+    this.getElement().querySelector(`.event__input--price`).addEventListener(`change`, this._priceChangeHandler);
+    this.getElement().querySelector(`.event__favorite-btn`).addEventListener(`click`, this._favouriteClickHandler);
+
+    if (this._data.offers.length > 0) {
+      this.getElement().querySelector(`.event__available-offers`).addEventListener(`click`, this._offerClickHandler);
+    }
+  }
+
+  _typeChangeHandler(evt) {
+    if (evt.target.value) {
+      evt.preventDefault();
+      this._updateData({type: evt.target.value});
+    }
+  }
+
+  _destinationChangeHandler(evt) {
+    evt.preventDefault();
+    this._updateData({destination: evt.target.value});
+  }
+
+  _priceChangeHandler(evt) {
+    evt.preventDefault();
+    this._updateData({cost: evt.target.value}, true);
   }
 
   _formSubmitHandler(evt) {
@@ -197,7 +244,22 @@ export default class EventEditor extends ComponentView {
 
   _favoriteClickHandler(evt) {
     evt.preventDefault();
-    this._callback.favoriteClick();
+    this._updateData({isFavorite: !this._data.isFavorite}, true);
+    if (this._callback.favoriteClick) {
+      this._callback.favoriteClick();
+    }
+  }
+
+  _offerClickHandler(evt) {
+    if (`index` in evt.target.dataset) {
+      const offers = this._data.offers.slice();
+      offers[evt.target.dataset.index] = Object.assign(
+          {},
+          offers[evt.target.dataset.index],
+          {isSelected: !offers[evt.target.dataset.index].isSelected}
+      );
+      this._updateData({offers}, true);
+    }
   }
 
   setFormSubmitHandler(callback) {
@@ -212,6 +274,19 @@ export default class EventEditor extends ComponentView {
 
   setFavoriteClickHandler(callback) {
     this._callback.favoriteClick = callback;
-    this.getElement().querySelector(`.event__favorite-btn`).addEventListener(`click`, this._favoriteClickHandler);
+  }
+
+  convertEventToData(evt) {
+    return Object.assign(
+        {},
+        evt,
+        {getDestinationInfo: this.getDestinationInfo}
+    );
+  }
+
+  convertDataToEvent(data) {
+    const result = Object.assign({}, data);
+    delete result.getDestinationInfo;
+    return result;
   }
 }

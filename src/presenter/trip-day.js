@@ -14,8 +14,10 @@ export default class TripDay {
     this._eventPresenters = {};
     this._tripEvents = null;
     this._dataChangeHandler = null;
+    this._destinationInfoHandler = null;
 
     this._onChangeData = this._onChangeData.bind(this);
+    this._onGetDestinationInfo = this._onGetDestinationInfo.bind(this);
   }
 
   init(tripEvents) {
@@ -34,8 +36,16 @@ export default class TripDay {
     return this._eventPresenters;
   }
 
+  setDestinationInfoHandler(destinationInfoHandler) {
+    this._destinationInfoHandler = destinationInfoHandler;
+  }
+
   setDataChangeHandler(dataChangeHandler) {
     this._dataChangeHandler = dataChangeHandler;
+  }
+
+  _onGetDestinationInfo(destination) {
+    return this._destinationInfoHandler ? this._destinationInfoHandler(destination) : null;
   }
 
   _clearEvents() {
@@ -48,8 +58,9 @@ export default class TripDay {
   _renderEvents() {
     this._eventPresenters = Object.fromEntries(this._tripEvents.map((tripEvent) => {
       const eventPresenter = new EventPresenter(this._tripDayComponent);
-      eventPresenter.init(tripEvent);
+      eventPresenter.setDestinationInfoHandler(this._onGetDestinationInfo);
       eventPresenter.setDataChangeHandler(this._onChangeData);
+      eventPresenter.init(tripEvent);
       return [tripEvent.id, eventPresenter];
     }));
   }

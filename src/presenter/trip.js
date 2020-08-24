@@ -18,6 +18,7 @@ export default class Trip {
     this._tripDayPresenters = {};
     this._eventPresenters = {};
     this._sortMode = `event`;
+    this._destinationsInfo = {};
 
     this._tripEventsComponent = new TripEventsView();
     this._noEventsComponent = new NoEventsView();
@@ -26,6 +27,8 @@ export default class Trip {
 
     this._onSortChange = this._onSortChange.bind(this);
     this._onEventChange = this._onEventChange.bind(this);
+
+    this.onGetDestinationInfo = this.onGetDestinationInfo.bind(this);
   }
 
   init(events) {
@@ -35,10 +38,19 @@ export default class Trip {
     this._renderTrip();
   }
 
+  setDestinationsInfo(destinationsInfo) {
+    this._destinationsInfo = destinationsInfo;
+  }
+
+  onGetDestinationInfo(destination) {
+    return this._destinationsInfo[destination];
+  }
+
   _renderTripDay(date, number, tripEvents) {
     const tripDayPresenter = new TripDayPresenter(this._tripDayListComponent, date, number);
     this._tripDayPresenters[`day-` + date] = tripDayPresenter;
     tripDayPresenter.setDataChangeHandler(this._onEventChange);
+    tripDayPresenter.setDestinationInfoHandler(this.onGetDestinationInfo);
     tripDayPresenter.init(tripEvents);
     Object.assign(this._eventPresenters, tripDayPresenter.getEventPresenters());
   }

@@ -10,18 +10,31 @@ export default class Event {
 
     this._eventComponent = null;
     this._eventEditorComponent = null;
+    this._isEditing = false;
 
     this._dataChangeHandler = null;
+    this._modeChangeHandler = null;
+    this._destinationInfoHandler = null;
 
     this._onEscKeyDown = this._onEscKeyDown.bind(this);
     this._onFormSubmit = this._onFormSubmit.bind(this);
     this._onRollupButtonClick = this._onRollupButtonClick.bind(this);
     this._onEditorRollupButtonClick = this._onEditorRollupButtonClick.bind(this);
     this._onEditorFavoriteClick = this._onEditorFavoriteClick.bind(this);
+
+    this._onGetDestinationInfo = this._onGetDestinationInfo.bind(this);
   }
 
   setDataChangeHandler(dataChangeHandler) {
     this._dataChangeHandler = dataChangeHandler;
+  }
+
+  setModeChangeHandler(modeChangeHandler) {
+    this._modeChangeHandler = modeChangeHandler;
+  }
+
+  setDestinationInfoHandler(destinationInfoHandler) {
+    this._destinationInfoHandler = destinationInfoHandler;
   }
 
   init(tripEvent) {
@@ -43,6 +56,10 @@ export default class Event {
 
     remove(oldEventComponent);
     remove(oldEventEditorComponent);
+  }
+
+  _onGetDestinationInfo(destination) {
+    return this._destinationInfoHandler ? this._destinationInfoHandler(destination) : null;
   }
 
   _onEscKeyDown(evt) {
@@ -72,19 +89,36 @@ export default class Event {
   }
 
   _switchToView() {
+    if (this._modeChangeHandler) {
+      this._modeChangeHandler(this, false);
+    }
+    this._isEditing = false;
+
     replace(this._eventComponent, this._eventEditorComponent);
     this._eventEditorComponent = null;
     document.removeEventListener(`keydown`, this._onEscKeyDown);
   }
 
   _makeEditor(insteadComponent) {
+    if (this._modeChangeHandler && !this._isEditing) {
+      this._modeChangeHandler(this, true);
+    }
+    this._isEditing = true;
+
     this._eventEditorComponent = new EventEditorView(this._tripEvent);
+    this._eventEditorComponent.setDestinationInfoHandler(this._onGetDestinationInfo);
     this._eventEditorComponent.setFormSubmitHandler(this._onFormSubmit);
     this._eventEditorComponent.setRollupButtonClickHandler(this._onEditorRollupButtonClick);
     this._eventEditorComponent.setFavoriteClickHandler(this._onEditorFavoriteClick);
     document.addEventListener(`keydown`, this._onEscKeyDown);
 
     replace(this._eventEditorComponent, insteadComponent);
+  }
+
+  resetView() {
+    if (this._isEditing) {
+      this._switchToView();
+    }
   }
 
   destroy() {
