@@ -1,6 +1,9 @@
 import SmartComponentView from "./smart-component.js";
 import {EVENT_TYPES} from "../const.js";
 import {formatDateForEditor, getTomorrow} from "../util/date.js";
+import flatpickr from "flatpickr";
+
+import "../../node_modules/flatpickr/dist/flatpickr.min.css";
 
 const BLANK_EVENT = {
   type: `flight`,
@@ -100,6 +103,12 @@ const createEventEditorTemplate = function (data) {
   const {type, destination, beginDateTime, endDateTime, cost, isFavorite, offers, destinationInfo, destinationsList} = data;
   const eventTypeInfo = EVENT_TYPES[type];
 
+  const saveButtonDisabled =
+    !beginDateTime ||
+    !endDateTime ||
+    beginDateTime.getTime() > endDateTime.getTime() ||
+    destinationsList.indexOf(destination) === -1;
+
   const eventTypeListTemplate = createEventTypeListTemplate(type);
   const destinationsListTemplate = createDestinationsListTemplate(destinationsList);
 
@@ -157,7 +166,7 @@ const createEventEditorTemplate = function (data) {
             <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${cost}">
           </div>
 
-          <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
+          <button class="event__save-btn  btn  btn--blue" type="submit" ${saveButtonDisabled ? `disabled` : ``}>Save</button>
           <button class="event__reset-btn" type="reset">Delete</button>
 
           <input id="event-favorite-1" class="event__favorite-checkbox  visually-hidden" type="checkbox" name="event-favorite" ${isFavorite ? `checked` : ``}>
@@ -187,6 +196,9 @@ export default class EventEditor extends SmartComponentView {
     this._destinationsListCallback = destinationsListCallback;
     this._specialOffersCallback = specialOffersCallback;
 
+    this._beginDatePicker = null;
+    this._endDatePicker = null;
+
     this._formSubmitHandler = this._formSubmitHandler.bind(this);
     this._formRollupButtonClickHandler = this._formRollupButtonClickHandler.bind(this);
 
@@ -195,6 +207,8 @@ export default class EventEditor extends SmartComponentView {
     this._priceChangeHandler = this._priceChangeHandler.bind(this);
     this._favouriteClickHandler = this._favouriteClickHandler.bind(this);
     this._offerClickHandler = this._offerClickHandler.bind(this);
+    this._beginDateChangeHandler = this._beginDateChangeHandler.bind(this);
+    this._endDateChangeHandler = this._endDateChangeHandler.bind(this);
 
     this._data = this.convertEventToData(evt);
   }
@@ -225,6 +239,54 @@ export default class EventEditor extends SmartComponentView {
     if (this._data.offers.length > 0) {
       this.getElement().querySelector(`.event__available-offers`).addEventListener(`click`, this._offerClickHandler);
     }
+
+    this._beginDatePicker = this._setDatePicker(
+        this._beginDatePicker,
+        this.getElement().querySelector(`.event__input--time[name="event-start-time"]`),
+        this._data.beginDateTime,
+        this._beginDateChangeHandler
+    );
+    this._endDatePicker = this._setDatePicker(
+        this._endDatePicker,
+        this.getElement().querySelector(`.event__input--time[name="event-end-time"]`),
+        this._data.endDateTime,
+        this._endDateChangeHandler
+    );
+  }
+
+  _setDatePicker(oldDatePicker, element, value, changeHandler) {
+    if (oldDatePicker) {
+      oldDatePicker.destroy();
+      oldDatePicker = null;
+    }
+
+    if (!element) {
+      return null;
+    }
+
+    return flatpickr(
+        element,
+        {
+          'dateFormat': `d/m/y H:i`,
+          'enableTime': true,
+          'time_24hr': true,
+          'defaultDate': value,
+          'onChange': changeHandler
+        }
+    );
+
+  }
+
+  _beginDateChangeHandler(selectedDates) {
+    this._updateData({
+      beginDateTime: selectedDates[0]
+    });
+  }
+
+  _endDateChangeHandler(selectedDates) {
+    this._updateData({
+      endDateTime: selectedDates[0]
+    });
   }
 
   _typeChangeHandler(evt) {
