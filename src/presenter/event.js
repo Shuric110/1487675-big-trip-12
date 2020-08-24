@@ -14,7 +14,9 @@ export default class Event {
 
     this._dataChangeHandler = null;
     this._modeChangeHandler = null;
-    this._destinationInfoHandler = null;
+    this._destinationInfoCallback = null;
+    this._destinationsListCallback = null;
+    this._specialOffersCallback = null;
 
     this._onEscKeyDown = this._onEscKeyDown.bind(this);
     this._onFormSubmit = this._onFormSubmit.bind(this);
@@ -22,7 +24,9 @@ export default class Event {
     this._onEditorRollupButtonClick = this._onEditorRollupButtonClick.bind(this);
     this._onEditorFavoriteClick = this._onEditorFavoriteClick.bind(this);
 
-    this._onGetDestinationInfo = this._onGetDestinationInfo.bind(this);
+    this.getDestinationInfo = this.getDestinationInfo.bind(this);
+    this.getDestinationsList = this.getDestinationsList.bind(this);
+    this.getSpecialOffers = this.getSpecialOffers.bind(this);
   }
 
   setDataChangeHandler(dataChangeHandler) {
@@ -33,12 +37,20 @@ export default class Event {
     this._modeChangeHandler = modeChangeHandler;
   }
 
-  setDestinationInfoHandler(destinationInfoHandler) {
-    this._destinationInfoHandler = destinationInfoHandler;
+  setDestinationInfoCallback(destinationInfoCallback) {
+    this._destinationInfoCallback = destinationInfoCallback;
+  }
+
+  setDestinationsListCallback(destinationsListCallback) {
+    this._destinationsListCallback = destinationsListCallback;
+  }
+
+  setSpecialOffersCallback(specialOffersCallback) {
+    this._specialOffersCallback = specialOffersCallback;
   }
 
   init(tripEvent) {
-    this._tripEvent = tripEvent;
+    this._tripEvent = Object.assign({}, tripEvent);
 
     const oldEventComponent = this._eventComponent;
     const oldEventEditorComponent = this._eventEditorComponent;
@@ -58,8 +70,16 @@ export default class Event {
     remove(oldEventEditorComponent);
   }
 
-  _onGetDestinationInfo(destination) {
-    return this._destinationInfoHandler ? this._destinationInfoHandler(destination) : null;
+  getDestinationInfo(destination) {
+    return this._destinationInfoCallback ? this._destinationInfoCallback(destination) : null;
+  }
+
+  getDestinationsList() {
+    return this._destinationsListCallback ? this._destinationsListCallback() : [];
+  }
+
+  getSpecialOffers(eventType) {
+    return this._specialOffersCallback ? this._specialOffersCallback(eventType) : [];
   }
 
   _onEscKeyDown(evt) {
@@ -83,8 +103,9 @@ export default class Event {
   }
 
   _onEditorFavoriteClick() {
+    this._tripEvent.isFavorite = !this._tripEvent.isFavorite;
     if (this._dataChangeHandler) {
-      this._dataChangeHandler(Object.assign({}, this._tripEvent, {isFavorite: !this._tripEvent.isFavorite}));
+      this._dataChangeHandler(Object.assign({}, this._tripEvent), true);
     }
   }
 
@@ -105,8 +126,8 @@ export default class Event {
     }
     this._isEditing = true;
 
-    this._eventEditorComponent = new EventEditorView(this._tripEvent);
-    this._eventEditorComponent.setDestinationInfoHandler(this._onGetDestinationInfo);
+    this._eventEditorComponent = new EventEditorView(this._tripEvent, this.getDestinationInfo, this.getDestinationsList, this.getSpecialOffers);
+
     this._eventEditorComponent.setFormSubmitHandler(this._onFormSubmit);
     this._eventEditorComponent.setRollupButtonClickHandler(this._onEditorRollupButtonClick);
     this._eventEditorComponent.setFavoriteClickHandler(this._onEditorFavoriteClick);

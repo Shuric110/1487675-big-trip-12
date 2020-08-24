@@ -19,6 +19,8 @@ export default class Trip {
     this._eventPresenters = {};
     this._sortMode = `event`;
     this._destinationsInfo = {};
+    this._destinationsList = [];
+    this._specialOffersList = {};
 
     this._tripEventsComponent = new TripEventsView();
     this._noEventsComponent = new NoEventsView();
@@ -26,9 +28,12 @@ export default class Trip {
     this._tripDayListComponent = new TripDayListView();
 
     this._onSortChange = this._onSortChange.bind(this);
-    this._onEventChange = this._onEventChange.bind(this);
+    this._onTripEventDataChange = this._onTripEventDataChange.bind(this);
+    this._onTripEventModeChange = this._onTripEventModeChange.bind(this);
 
-    this.onGetDestinationInfo = this.onGetDestinationInfo.bind(this);
+    this.getDestinationInfo = this.getDestinationInfo.bind(this);
+    this.getDestinationsList = this.getDestinationsList.bind(this);
+    this.getSpecialOffers = this.getSpecialOffers.bind(this);
   }
 
   init(events) {
@@ -42,15 +47,34 @@ export default class Trip {
     this._destinationsInfo = destinationsInfo;
   }
 
-  onGetDestinationInfo(destination) {
+  setDestinationsList(destinationsList) {
+    this._destinationsList = destinationsList;
+  }
+
+  setSpecialOffersList(specialOffersList) {
+    this._specialOffersList = specialOffersList;
+  }
+
+  getDestinationInfo(destination) {
     return this._destinationsInfo[destination];
+  }
+
+  getDestinationsList() {
+    return this._destinationsList;
+  }
+
+  getSpecialOffers(eventType) {
+    return this._specialOffersList[eventType] || [];
   }
 
   _renderTripDay(date, number, tripEvents) {
     const tripDayPresenter = new TripDayPresenter(this._tripDayListComponent, date, number);
     this._tripDayPresenters[`day-` + date] = tripDayPresenter;
-    tripDayPresenter.setDataChangeHandler(this._onEventChange);
-    tripDayPresenter.setDestinationInfoHandler(this.onGetDestinationInfo);
+    tripDayPresenter.setTripEventDataChangeHandler(this._onTripEventDataChange);
+    tripDayPresenter.setTripEventModeChangeHandler(this._onTripEventModeChange);
+    tripDayPresenter.setDestinationInfoCallback(this.getDestinationInfo);
+    tripDayPresenter.setDestinationsListCallback(this.getDestinationsList);
+    tripDayPresenter.setSpecialOffersCallback(this.getSpecialOffers);
     tripDayPresenter.init(tripEvents);
     Object.assign(this._eventPresenters, tripDayPresenter.getEventPresenters());
   }
@@ -128,10 +152,20 @@ export default class Trip {
     this._renderSort();
   }
 
-  _onEventChange(newEvent) {
+  _onTripEventDataChange(newEvent, isEditing) {
     updateItem(this._events, newEvent);
     updateItem(this._sourceEvents, newEvent);
-    this._eventPresenters[newEvent.id].init(newEvent);
+    if (!isEditing) {
+      this._eventPresenters[newEvent.id].init(newEvent);
+    }
+  }
+
+  _onTripEventModeChange(tripEventEditorPresenter, isEditing) {
+    if (isEditing) {
+      Object.values(this._eventPresenters).forEach(function (eventPresenter) {
+        eventPresenter.resetView();
+      });
+    }
   }
 
   _renderTrip() {

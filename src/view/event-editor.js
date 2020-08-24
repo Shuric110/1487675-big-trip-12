@@ -19,7 +19,7 @@ const createEventTypeListItemTemplate = function (eventType, eventTypeInfo, sele
       <input id="event-type-${eventType}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${eventType}"
         ${eventType === selectedEventType ? `checked` : ``}
       >
-      <label class="event__type-label  event__type-label--${eventType}" for="event-type-${eventType}-1">${eventTypeInfo.displayName}1</label>
+      <label class="event__type-label  event__type-label--${eventType}" for="event-type-${eventType}-1">${eventTypeInfo.displayName}</label>
     </div>
   `;
 };
@@ -44,9 +44,9 @@ const createOfferTemplate = function (offer, index) {
   const {name, cost, isSelected} = offer;
   return `
     <div class="event__offer-selector">
-      <input class="event__offer-checkbox  visually-hidden" id="event-offer-luggage-1" type="checkbox"
+      <input class="event__offer-checkbox  visually-hidden" id="event-offer-luggage-${index}" type="checkbox"
         name="event-offer-luggage" data-index="${index}" ${isSelected ? `checked` : ``}>
-      <label class="event__offer-label" for="event-offer-luggage-1">
+      <label class="event__offer-label" for="event-offer-luggage-${index}">
         <span class="event__offer-title">${name}</span>
         &plus;
         &euro;&nbsp;<span class="event__offer-price">${cost}</span>
@@ -86,12 +86,22 @@ const createDestinationDescriptionTemplate = function (destinationInfo) {
   `;
 };
 
-const createEventEditorTemplate = function (evt) {
-  const {type, destination, beginDateTime, endDateTime, cost, isFavorite, offers, getDestinationInfo} = evt;
+const createDestinationsListTemplate = function (destinationsList) {
+  return `
+    <datalist id="destination-list-1">
+      ${destinationsList.map((destination) => `
+        <option value="${destination}"></option>
+      `).join(``)}
+    </datalist>
+  `;
+};
+
+const createEventEditorTemplate = function (data) {
+  const {type, destination, beginDateTime, endDateTime, cost, isFavorite, offers, destinationInfo, destinationsList} = data;
   const eventTypeInfo = EVENT_TYPES[type];
-  const destinationInfo = getDestinationInfo(destination);
 
   const eventTypeListTemplate = createEventTypeListTemplate(type);
+  const destinationsListTemplate = createDestinationsListTemplate(destinationsList);
 
   const offersTemplate = createOffersTemplate(offers);
   const destinationDescriptionTemplate = createDestinationDescriptionTemplate(destinationInfo);
@@ -124,11 +134,7 @@ const createEventEditorTemplate = function (evt) {
               ${eventTypeInfo.titlePrefix}
             </label>
             <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination}" list="destination-list-1">
-            <datalist id="destination-list-1">
-              <option value="Amsterdam"></option>
-              <option value="Geneva"></option>
-              <option value="Chamonix"></option>
-            </datalist>
+            ${destinationsListTemplate}
           </div>
 
           <div class="event__field-group  event__field-group--time">
@@ -174,19 +180,20 @@ const createEventEditorTemplate = function (evt) {
 };
 
 export default class EventEditor extends SmartComponentView {
-  constructor(evt = BLANK_EVENT) {
+  constructor(evt = BLANK_EVENT, destinationInfoCallback, destinationsListCallback, specialOffersCallback) {
     super();
 
-    this._destinationInfoHandler = null;
+    this._destinationInfoCallback = destinationInfoCallback;
+    this._destinationsListCallback = destinationsListCallback;
+    this._specialOffersCallback = specialOffersCallback;
 
     this._formSubmitHandler = this._formSubmitHandler.bind(this);
     this._formRollupButtonClickHandler = this._formRollupButtonClickHandler.bind(this);
-    this.getDestinationInfo = this.getDestinationInfo.bind(this);
 
     this._typeChangeHandler = this._typeChangeHandler.bind(this);
     this._destinationChangeHandler = this._destinationChangeHandler.bind(this);
     this._priceChangeHandler = this._priceChangeHandler.bind(this);
-    this._favoriteClickHandler = this._favoriteClickHandler.bind(this);
+    this._favouriteClickHandler = this._favouriteClickHandler.bind(this);
     this._offerClickHandler = this._offerClickHandler.bind(this);
 
     this._data = this.convertEventToData(evt);
@@ -196,12 +203,17 @@ export default class EventEditor extends SmartComponentView {
     return createEventEditorTemplate(this._data);
   }
 
-  setDestinationInfoHandler(destinationInfoHandler) {
-    this._destinationInfoHandler = destinationInfoHandler;
+  getDestinationInfo(destination) {
+    const result = this._destinationInfoCallback ? this._destinationInfoCallback(destination) : null;
+    return result ? Object.assign({}, result) : null;
   }
 
-  getDestinationInfo(destination) {
-    return this._destinationInfoHandler ? this._destinationInfoHandler(destination) : null;
+  getDestinationsList() {
+    return this._destinationsListCallback ? this._destinationsListCallback() : [];
+  }
+
+  getSpecialOffers(eventType) {
+    return this._specialOffersCallback ? this._specialOffersCallback(eventType) : [];
   }
 
   _setInnerHandlers() {
@@ -218,13 +230,19 @@ export default class EventEditor extends SmartComponentView {
   _typeChangeHandler(evt) {
     if (evt.target.value) {
       evt.preventDefault();
-      this._updateData({type: evt.target.value});
+      this._updateData({
+        type: evt.target.value,
+        offers: this.getSpecialOffers(evt.target.value)
+      });
     }
   }
 
   _destinationChangeHandler(evt) {
     evt.preventDefault();
-    this._updateData({destination: evt.target.value});
+    this._updateData({
+      destination: evt.target.value,
+      destinationInfo: this.getDestinationInfo(evt.target.value)
+    });
   }
 
   _priceChangeHandler(evt) {
@@ -242,9 +260,9 @@ export default class EventEditor extends SmartComponentView {
     this._callback.rollupButtonClick();
   }
 
-  _favoriteClickHandler(evt) {
+  _favouriteClickHandler(evt) {
     evt.preventDefault();
-    this._updateData({isFavorite: !this._data.isFavorite}, true);
+    this._updateData({isFavorite: !this._data.isFavorite});
     if (this._callback.favoriteClick) {
       this._callback.favoriteClick();
     }
@@ -280,13 +298,19 @@ export default class EventEditor extends SmartComponentView {
     return Object.assign(
         {},
         evt,
-        {getDestinationInfo: this.getDestinationInfo}
+        {
+          destinationInfo: this.getDestinationInfo(evt.destination),
+          destinationsList: this.getDestinationsList()
+        }
     );
   }
 
   convertDataToEvent(data) {
     const result = Object.assign({}, data);
-    delete result.getDestinationInfo;
+
+    delete result.destinationInfo;
+    delete result.destinationsList;
+
     return result;
   }
 }

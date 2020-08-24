@@ -13,11 +13,18 @@ export default class TripDay {
     this._initialized = false;
     this._eventPresenters = {};
     this._tripEvents = null;
-    this._dataChangeHandler = null;
-    this._destinationInfoHandler = null;
+    this._tripEventDataChangeHandler = null;
+    this._tripEventModeChangeHandler = null;
+    this._destinationInfoCallback = null;
+    this._destinationsListCallback = null;
+    this._specialOffersCallback = null;
 
-    this._onChangeData = this._onChangeData.bind(this);
-    this._onGetDestinationInfo = this._onGetDestinationInfo.bind(this);
+    this._onTripEventDataChange = this._onTripEventDataChange.bind(this);
+    this._onTripEventModeChange = this._onTripEventModeChange.bind(this);
+
+    this.getDestinationInfo = this.getDestinationInfo.bind(this);
+    this.getDestinationsList = this.getDestinationsList.bind(this);
+    this.getSpecialOffers = this.getSpecialOffers.bind(this);
   }
 
   init(tripEvents) {
@@ -36,16 +43,36 @@ export default class TripDay {
     return this._eventPresenters;
   }
 
-  setDestinationInfoHandler(destinationInfoHandler) {
-    this._destinationInfoHandler = destinationInfoHandler;
+  setDestinationInfoCallback(destinationInfoCallback) {
+    this._destinationInfoCallback = destinationInfoCallback;
   }
 
-  setDataChangeHandler(dataChangeHandler) {
-    this._dataChangeHandler = dataChangeHandler;
+  setDestinationsListCallback(destinationsListCallback) {
+    this._destinationsListCallback = destinationsListCallback;
   }
 
-  _onGetDestinationInfo(destination) {
-    return this._destinationInfoHandler ? this._destinationInfoHandler(destination) : null;
+  setSpecialOffersCallback(specialOffersCallback) {
+    this._specialOffersCallback = specialOffersCallback;
+  }
+
+  setTripEventDataChangeHandler(tripEventDataChangeHandler) {
+    this._tripEventDataChangeHandler = tripEventDataChangeHandler;
+  }
+
+  setTripEventModeChangeHandler(tripEventModeChangeHandler) {
+    this._tripEventModeChangeHandler = tripEventModeChangeHandler;
+  }
+
+  getDestinationInfo(destination) {
+    return this._destinationInfoCallback ? this._destinationInfoCallback(destination) : null;
+  }
+
+  getDestinationsList() {
+    return this._destinationsListCallback ? this._destinationsListCallback() : [];
+  }
+
+  getSpecialOffers(eventType) {
+    return this._specialOffersCallback ? this._specialOffersCallback(eventType) : [];
   }
 
   _clearEvents() {
@@ -58,16 +85,25 @@ export default class TripDay {
   _renderEvents() {
     this._eventPresenters = Object.fromEntries(this._tripEvents.map((tripEvent) => {
       const eventPresenter = new EventPresenter(this._tripDayComponent);
-      eventPresenter.setDestinationInfoHandler(this._onGetDestinationInfo);
-      eventPresenter.setDataChangeHandler(this._onChangeData);
+      eventPresenter.setDestinationInfoCallback(this.getDestinationInfo);
+      eventPresenter.setDestinationsListCallback(this.getDestinationsList);
+      eventPresenter.setSpecialOffersCallback(this.getSpecialOffers);
+      eventPresenter.setDataChangeHandler(this._onTripEventDataChange);
+      eventPresenter.setModeChangeHandler(this._onTripEventModeChange);
       eventPresenter.init(tripEvent);
       return [tripEvent.id, eventPresenter];
     }));
   }
 
-  _onChangeData(newEvent) {
-    if (this._dataChangeHandler) {
-      this._dataChangeHandler(newEvent);
+  _onTripEventDataChange(newEvent, isEditing) {
+    if (this._tripEventDataChangeHandler) {
+      this._tripEventDataChangeHandler(newEvent, isEditing);
+    }
+  }
+
+  _onTripEventModeChange(tripEventEditorPresenter, isEditing) {
+    if (this._tripEventModeChangeHandler) {
+      this._tripEventModeChangeHandler(tripEventEditorPresenter, isEditing);
     }
   }
 
