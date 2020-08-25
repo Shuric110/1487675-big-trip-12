@@ -1,41 +1,29 @@
-const pad = function (number) {
-  if (number < 10) {
-    return `0` + number;
-  }
-  return number;
+import moment from "moment";
+
+const formatDateTime = function (date, format) {
+  return (date instanceof Date)
+    ? moment(date).format(format)
+    : ``;
 };
 
 export const formatDateTimeAsISOString = function (date) {
-  return date.getFullYear() +
-    `-` + pad(date.getMonth() + 1) +
-    `-` + pad(date.getDate()) +
-    `T` + pad(date.getHours()) +
-    `:` + pad(date.getMinutes());
+  return formatDateTime(date, `YYYY-MM-DD HH:mm`);
 };
 
 export const formatDateAsISOString = function (date) {
-  return date.getFullYear() +
-    `-` + pad(date.getMonth() + 1) +
-    `-` + pad(date.getDate());
+  return formatDateTime(date, `YYYY-MM-DD`);
 };
 
 export const formatDateAsTimeHM = function (date) {
-  return date.getHours() + `:` + pad(date.getMinutes());
+  return formatDateTime(date, `HH:mm`);
 };
 
 export const formatDateAsDateMD = function (date) {
-  if (!date) {
-    return ``;
-  }
-  return date.toLocaleString(`en-US`, {month: `short`, day: `2-digit`});
+  return formatDateTime(date, `MMM D`);
 };
 
 export const formatDateForEditor = function (date) {
-  return pad(date.getDate()) +
-    `/` + pad(date.getMonth() + 1) +
-    `/` + pad(date.getFullYear() % 100) +
-    ` ` + pad(date.getHours()) +
-    `:` + pad(date.getMinutes());
+  return formatDateTime(date, `D/MM/YYYY H:mm`);
 };
 
 export const formatIntervalDuration = function (beginDate, endDate) {
@@ -60,9 +48,9 @@ export const formatIntervalDuration = function (beginDate, endDate) {
 };
 
 export const formatDatesRange = function (beginDate, endDate) {
-  const beginMonth = beginDate.toLocaleString(`en-US`, {month: `short`});
+  const beginMonth = formatDateTime(beginDate, `MMM`);
   const beginDay = beginDate.getDate();
-  const endMonth = endDate.toLocaleString(`en-US`, {month: `short`});
+  const endMonth = formatDateTime(endDate, `MMM`);
   const endDay = endDate.getDate();
 
   let beginDateStr = beginMonth + ` ` + beginDay;
