@@ -3,7 +3,7 @@ import {EVENT_TYPES} from "../const.js";
 import {formatDateForEditor, getTomorrow} from "../util/date.js";
 import flatpickr from "flatpickr";
 
-import "../../node_modules/flatpickr/dist/flatpickr.min.css";
+import "flatpickr/dist/flatpickr.min.css";
 
 const BLANK_EVENT = {
   type: `flight`,
