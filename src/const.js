@@ -20,33 +20,6 @@ export const EventType = {
   RESTAURANT: `restaurant`
 };
 
-/* **** к выпиливанию
-export const SortMode = {
-  EVENT: `event`,
-  TIME: `time`,
-  PRICE: `price`,
-};
-
-export const SORT_TYPES = {
-  [SortMode.EVENT]: {
-    title: `Event`,
-    compare: null
-  },
-  [SortMode.TIME]: {
-    title: `Time`,
-    compare({beginDateTime: beginA, endDateTime: endA}, {beginDateTime: beginB, endDateTime: endB}) {
-      return (endB.getTime() - beginB.getTime()) - (endA.getTime() - beginA.getTime());
-    }
-  },
-  [SortMode.PRICE]: {
-    title: `Price`,
-    compare({cost: a}, {cost: b}) {
-      return b - a;
-    }
-  },
-};
-*/
-
 export const EVENT_TYPES = {
   [EventType.TAXI]: {
     displayName: `Taxi`,

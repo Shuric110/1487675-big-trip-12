@@ -21,6 +21,7 @@ export default class Event {
 
     this._onEscKeyDown = this._onEscKeyDown.bind(this);
     this._onFormSubmit = this._onFormSubmit.bind(this);
+    this._onFormReset = this._onFormReset.bind(this);
     this._onRollupButtonClick = this._onRollupButtonClick.bind(this);
     this._onEditorRollupButtonClick = this._onEditorRollupButtonClick.bind(this);
     this._onEditorFavoriteClick = this._onEditorFavoriteClick.bind(this);
@@ -102,6 +103,17 @@ export default class Event {
     this._switchToView();
   }
 
+  _onFormReset(tripEvent) {
+    this._switchToView();
+
+    if (this._dataChangeHandler) {
+      this._dataChangeHandler(
+          UpdateAction.EVENT_DELETE,
+          tripEvent
+      );
+    }
+  }
+
   _onRollupButtonClick() {
     this._makeEditor(this._eventComponent);
   }
@@ -137,6 +149,7 @@ export default class Event {
     this._eventEditorComponent = new EventEditorView(this._tripEvent, this.getDestinationInfo, this.getDestinationsList, this.getSpecialOffers);
 
     this._eventEditorComponent.setFormSubmitHandler(this._onFormSubmit);
+    this._eventEditorComponent.setFormResetHandler(this._onFormReset);
     this._eventEditorComponent.setRollupButtonClickHandler(this._onEditorRollupButtonClick);
     this._eventEditorComponent.setFavoriteClickHandler(this._onEditorFavoriteClick);
     document.addEventListener(`keydown`, this._onEscKeyDown);

@@ -4,12 +4,13 @@ import NoEventsView from "../view/no-events.js";
 import TripDayListView from "../view/trip-day-list.js";
 
 import TripDayPresenter from "./trip-day.js";
+import EventNewPresenter from "./event-new.js";
 
 import {truncDate} from "../util/date.js";
 import {RenderPosition, render, remove} from "../util/render.js";
 import {updateItem} from "../util/common.js";
 import {UpdateAction} from "../const.js";
-
+import {FilterType} from "../model/board.js";
 
 export default class Trip {
   constructor(container, eventsModel, destinationModel, boardModel) {
@@ -17,16 +18,6 @@ export default class Trip {
     this._eventsModel = eventsModel;
     this._destinationModel = destinationModel;
     this._boardModel = boardModel;
-
-    this._tripDayPresenters = {};
-    this._eventPresenters = {};
-    this._events = null;
-
-    this._sortComponent = null;
-
-    this._tripEventsComponent = new TripEventsView();
-    this._noEventsComponent = new NoEventsView();
-    this._tripDayListComponent = new TripDayListView();
 
     this._onSortChange = this._onSortChange.bind(this);
     this._onTripEventDataChange = this._onTripEventDataChange.bind(this);
@@ -37,6 +28,21 @@ export default class Trip {
     this.getDestinationInfo = this.getDestinationInfo.bind(this);
     this.getDestinationsList = this.getDestinationsList.bind(this);
     this.getSpecialOffers = this.getSpecialOffers.bind(this);
+
+    this._sortComponent = null;
+    this._tripEventsComponent = new TripEventsView();
+    this._noEventsComponent = new NoEventsView();
+    this._tripDayListComponent = new TripDayListView();
+
+    this._tripDayPresenters = {};
+    this._eventPresenters = {};
+    this._events = null;
+
+    this._eventNewPresenter = new EventNewPresenter(this._tripDayListComponent);
+    this._eventNewPresenter.setDataChangeHandler(this._onViewAction);
+    this._eventNewPresenter.setDestinationInfoCallback(this.getDestinationInfo);
+    this._eventNewPresenter.setDestinationsListCallback(this.getDestinationsList);
+    this._eventNewPresenter.setSpecialOffersCallback(this.getSpecialOffers);
   }
 
   init() {
@@ -48,6 +54,14 @@ export default class Trip {
 
     render(this._tripContainer, this._tripEventsComponent, RenderPosition.BEFOREEND);
     this._renderTrip();
+  }
+
+  createTripEvent() {
+    this._boardModel.setFilter(FilterType.EVERYTHING);
+    Object.values(this._eventPresenters).forEach(function (eventPresenter) {
+      eventPresenter.resetView();
+    });
+    this._eventNewPresenter.init();
   }
 
   _getEvents() {
@@ -189,6 +203,7 @@ export default class Trip {
 
   _onTripEventModeChange(tripEventEditorPresenter, isEditing) {
     if (isEditing) {
+      this._eventNewPresenter.destroy();
       Object.values(this._eventPresenters).forEach(function (eventPresenter) {
         eventPresenter.resetView();
       });

@@ -65,7 +65,7 @@ export const EVENT_OFFERS = {
   ],
 };
 
-const eventIdSequence = {
+export const eventIdSequence = {
   _currentValue: 0,
 
   getNextValue() {
