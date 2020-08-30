@@ -1,7 +1,10 @@
-export const SortMode = {
-  EVENT: `event`,
-  TIME: `time`,
-  PRICE: `price`,
+
+export const UpdateAction = {
+  EVENT_UPDATE: `EVENT_UPDATE`,
+  EVENT_FLAGS_UPDATE: `EVENT_FLAGS_UPDATE`,
+  EVENT_ADD: `EVENT_ADD`,
+  EVENT_DELETE: `EVENT_DELETE`,
+  FILTER_SORT_UPDATE: `FILTER_SORT_UPDATE`
 };
 
 export const EventType = {
@@ -15,6 +18,13 @@ export const EventType = {
   CHECK_IN: `check-in`,
   SIGHTSEEING: `sightseeing`,
   RESTAURANT: `restaurant`
+};
+
+/* **** к выпиливанию
+export const SortMode = {
+  EVENT: `event`,
+  TIME: `time`,
+  PRICE: `price`,
 };
 
 export const SORT_TYPES = {
@@ -35,6 +45,7 @@ export const SORT_TYPES = {
     }
   },
 };
+*/
 
 export const EVENT_TYPES = {
   [EventType.TAXI]: {

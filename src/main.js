@@ -1,3 +1,7 @@
+import BoardModel from "./model/board.js";
+import EventsModel from "./model/events.js";
+import DestinationModel from "./model/destination.js";
+
 import FilterView from "./view/filter.js";
 import MenuView from "./view/menu.js";
 import TripInfoView from "./view/trip-info.js";
@@ -16,18 +20,24 @@ const events = generateEvents(EVENT_COUNT);
 const destinationsInfo = generateDestinationsInfo();
 const journeySummary = createJourneySummary(events);
 
+const boardModel = new BoardModel();
+const eventsModel = new EventsModel();
+const destinationModel = new DestinationModel();
+
+eventsModel.setEvents(events);
+destinationModel.setDestinationsInfo(destinationsInfo);
+destinationModel.setDestinationsList(DESTINATIONS);
+destinationModel.setSpecialOffersList(EVENT_OFFERS);
+
 const tripMainElement = document.querySelector(`.trip-main`);
 const tripControlsElement = tripMainElement.querySelector(`.trip-controls`);
 const tripMainContainerElement = document.querySelector(`main .page-body__container`);
 
-const tripPresenter = new TripPresenter(tripMainContainerElement);
+const tripPresenter = new TripPresenter(tripMainContainerElement, eventsModel, destinationModel, boardModel);
 
 
 render(tripMainElement, new TripInfoView(journeySummary), RenderPosition.AFTERBEGIN);
 render(tripControlsElement, new MenuView(), RenderPosition.BEFOREEND);
 render(tripControlsElement, new FilterView(), RenderPosition.BEFOREEND);
 
-tripPresenter.setDestinationsInfo(destinationsInfo);
-tripPresenter.setDestinationsList(DESTINATIONS);
-tripPresenter.setSpecialOffersList(EVENT_OFFERS);
 tripPresenter.init(events);

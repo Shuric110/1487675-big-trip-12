@@ -314,7 +314,7 @@ export default class EventEditor extends SmartComponentView {
 
   _formSubmitHandler(evt) {
     evt.preventDefault();
-    this._callback.formSubmit();
+    this._callback.formSubmit(this.convertDataToEvent(this._data));
   }
 
   _formRollupButtonClickHandler(evt) {
@@ -324,9 +324,10 @@ export default class EventEditor extends SmartComponentView {
 
   _favouriteClickHandler(evt) {
     evt.preventDefault();
-    this._updateData({isFavorite: !this._data.isFavorite});
+    const update = {isFavorite: !this._data.isFavorite};
+    this._updateData(update);
     if (this._callback.favoriteClick) {
-      this._callback.favoriteClick();
+      this._callback.favoriteClick(update);
     }
   }
 
@@ -367,8 +368,8 @@ export default class EventEditor extends SmartComponentView {
     );
   }
 
-  convertDataToEvent(data) {
-    const result = Object.assign({}, data);
+  convertDataToEvent(eventData) {
+    const result = Object.assign({}, eventData);
 
     delete result.destinationInfo;
     delete result.destinationsList;

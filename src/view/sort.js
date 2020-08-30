@@ -1,40 +1,25 @@
 import ComponentView from "./component.js";
-import {SORT_TYPES} from "../const.js";
 
 export default class Sort extends ComponentView {
-  constructor() {
+  constructor(sortDefinitions, currentSort) {
     super();
-    this._sortMode = null;
-    this._showDayTitle = true;
+    this._sortDefinitions = sortDefinitions;
+    this._currentSort = currentSort;
 
     this._sortChangeHandler = this._sortChangeHandler.bind(this);
-  }
-
-  setSortMode(sortMode) {
-    if (this._sortMode !== sortMode) {
-      this._sortMode = sortMode;
-      this.removeElement();
-    }
-  }
-
-  setShowDayTitle(showDayTitle) {
-    if (this._showDayTitle !== showDayTitle) {
-      this._showDayTitle = showDayTitle;
-      this.removeElement();
-    }
   }
 
   getTemplate() {
     return `
       <form class="trip-events__trip-sort  trip-sort" action="#" method="get">
         <span class="trip-sort__item  trip-sort__item--day">
-          ${this._showDayTitle ? `Day` : ``}
+          ${this._currentSort.dayGrouping ? `Day` : ``}
         </span>
 
-        ${Object.entries(SORT_TYPES).map(([code, {title}]) => `
+        ${this._sortDefinitions.map(({code, title}) => `
           <div class="trip-sort__item  trip-sort__item--${code}">
             <input id="sort-${code}" class="trip-sort__input visually-hidden" type="radio"
-              name="trip-sort" value="sort-${code}" ${this._sortMode === code ? `checked` : ``}>
+              name="trip-sort" value="sort-${code}" ${this._currentSort.code === code ? `checked` : ``}>
             <label class="trip-sort__btn" for="sort-${code}" data-sort="${code}">${title}</label>
           </div>
         `).join(``)}
