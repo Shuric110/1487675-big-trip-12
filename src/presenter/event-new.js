@@ -29,6 +29,10 @@ export default class EventNew {
   }
 
   init() {
+    if (this._tripDayComponent) {
+      this.destroy();
+    }
+
     this._tripDayComponent = new TripDayView();
     this._eventEditorComponent = new EventEditorView(this._tripEvent, this.getDestinationInfo, this.getDestinationsList, this.getSpecialOffers);
 
