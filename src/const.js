@@ -72,3 +72,8 @@ export const EVENT_TYPES = {
     isTransport: false
   },
 };
+
+export const MenuItem = {
+  TABLE: `TABLE`,
+  STATISTICS: `STATISTICS`
+};

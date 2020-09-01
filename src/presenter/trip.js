@@ -46,6 +46,7 @@ export default class Trip {
   }
 
   init() {
+    this._events = null;
     this._eventsModel.addObserver(this._onModelEvent);
     this._boardModel.addObserver(this._onModelEvent);
 
@@ -56,12 +57,28 @@ export default class Trip {
     this._renderTrip();
   }
 
-  createTripEvent() {
+  destroy() {
+    this._clearTrip();
+    remove(this._tripEventsComponent);
+    this._eventsModel.removeObserver(this._onModelEvent);
+    this._boardModel.removeObserver(this._onModelEvent);
+  }
+
+  createTripEvent(formCloseHandler) {
+    this._cancelEventEditors();
     this._boardModel.setFilter(FilterType.EVERYTHING);
+    this._eventNewPresenter.init(formCloseHandler);
+  }
+
+  cancelCreateTripEvent() {
+    this._eventNewPresenter.destroy();
+  }
+
+  _cancelEventEditors() {
+    this.cancelCreateTripEvent();
     Object.values(this._eventPresenters).forEach(function (eventPresenter) {
       eventPresenter.resetView();
     });
-    this._eventNewPresenter.init();
   }
 
   _getEvents() {
@@ -203,10 +220,7 @@ export default class Trip {
 
   _onTripEventModeChange(tripEventEditorPresenter, isEditing) {
     if (isEditing) {
-      this._eventNewPresenter.destroy();
-      Object.values(this._eventPresenters).forEach(function (eventPresenter) {
-        eventPresenter.resetView();
-      });
+      this._cancelEventEditors();
     }
   }
 
