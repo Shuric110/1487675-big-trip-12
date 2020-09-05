@@ -57,6 +57,7 @@ const switchPage = function (menuItem) {
       tripPresenter.destroy();
       staticticsComponent = new StatisticsView(eventsModel.getEvents());
       render(tripMainContainerElement, staticticsComponent, RenderPosition.BEFOREEND);
+      staticticsComponent.renderCharts();
       break;
   }
   menuComponent.setActiveItem(menuItem);

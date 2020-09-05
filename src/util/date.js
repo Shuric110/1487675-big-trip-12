@@ -26,8 +26,8 @@ export const formatDateForEditor = function (date) {
   return formatDateTime(date, `D/MM/YYYY H:mm`);
 };
 
-export const formatIntervalDuration = function (beginDate, endDate) {
-  let duration = Math.floor((endDate.getTime() - beginDate.getTime()) / 1000 / 60);
+export const formatDuration = function (durationMinutes) {
+  let duration = durationMinutes;
 
   const minutes = duration % 60;
   duration = (duration - minutes) / 60;
@@ -45,6 +45,10 @@ export const formatIntervalDuration = function (beginDate, endDate) {
 
   result = `${duration}D ${result}`;
   return result;
+};
+
+export const formatIntervalDuration = function (beginDate, endDate) {
+  return formatDuration(Math.floor((endDate.getTime() - beginDate.getTime()) / 1000 / 60));
 };
 
 export const formatDatesRange = function (beginDate, endDate) {
