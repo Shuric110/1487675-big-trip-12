@@ -61,8 +61,8 @@ export default class TripInfo {
     }
 
     const routeSummary = route.length <= 3
-      ? route.join(` &mdash; `)
-      : route[0] + ` &mdash; ... &mdash; ` + route[route.length - 1];
+      ? route.join(` — `)
+      : route[0] + ` — ... — ` + route[route.length - 1];
 
     const journeyDates = formatDatesRange(events[0].beginDateTime, events[events.length - 1].endDateTime);
 

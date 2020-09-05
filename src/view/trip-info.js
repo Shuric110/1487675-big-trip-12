@@ -1,4 +1,5 @@
 import ComponentView from "./component.js";
+import he from "he";
 
 export default class TripInfo extends ComponentView {
   constructor(summary) {
@@ -11,7 +12,7 @@ export default class TripInfo extends ComponentView {
     return `
       <section class="trip-main__trip-info  trip-info">
         <div class="trip-info__main">
-          <h1 class="trip-info__title">${routeSummary}</h1>
+          <h1 class="trip-info__title">${he.encode(routeSummary)}</h1>
 
           <p class="trip-info__dates">${journeyDates}</p>
         </div>
