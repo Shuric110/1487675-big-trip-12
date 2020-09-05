@@ -3,6 +3,7 @@ import {EVENT_TYPES} from "../const.js";
 import {formatDateForEditor, getTomorrow} from "../util/date.js";
 import flatpickr from "flatpickr";
 import moment from "moment";
+import he from "he";
 
 import "flatpickr/dist/flatpickr.min.css";
 
@@ -94,7 +95,7 @@ const createDestinationsListTemplate = function (destinationsList) {
   return `
     <datalist id="destination-list-1">
       ${destinationsList.map((destination) => `
-        <option value="${destination}"></option>
+        <option value="${he.encode(destination)}"></option>
       `).join(``)}
     </datalist>
   `;
@@ -137,7 +138,7 @@ const createEventEditorTemplate = function (data) {
             <label class="event__label  event__type-output" for="event-destination-1">
               ${eventTypeInfo.titlePrefix}
             </label>
-            <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination}" list="destination-list-1">
+            <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${he.encode(destination)}" list="destination-list-1">
             ${destinationsListTemplate}
           </div>
 
@@ -380,7 +381,7 @@ export default class EventEditor extends SmartComponentView {
       !moment(beginDateTime).isValid() ||
       !moment(endDateTime).isValid() ||
       moment(beginDateTime).isAfter(endDateTime) ||
-      !isFinite(+cost) ||
+      !String(cost).match(/^ *\d+ *$/) ||
       destinationsList.indexOf(destination) === -1;
   }
 
@@ -399,7 +400,7 @@ export default class EventEditor extends SmartComponentView {
   convertDataToEvent(eventData) {
     const result = Object.assign({}, eventData);
 
-    result.cost = +result.cost;
+    result.cost = isFinite(+result.cost) ? +result.cost : 0;
 
     delete result.destinationInfo;
     delete result.destinationsList;
