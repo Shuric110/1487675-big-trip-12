@@ -14,6 +14,7 @@ export default class EventNew {
     this._eventEditorComponent = null;
 
     this._dataChangeHandler = null;
+    this._formCloseHandler = null;
     this._destinationInfoCallback = null;
     this._destinationsListCallback = null;
     this._specialOffersCallback = null;
@@ -28,10 +29,12 @@ export default class EventNew {
     this.getSpecialOffers = this.getSpecialOffers.bind(this);
   }
 
-  init() {
+  init(formCloseHandler) {
     if (this._tripDayComponent) {
       this.destroy();
     }
+
+    this._formCloseHandler = formCloseHandler;
 
     this._tripDayComponent = new TripDayView();
     this._eventEditorComponent = new EventEditorView(this._tripEvent, this.getDestinationInfo, this.getDestinationsList, this.getSpecialOffers);
@@ -53,6 +56,10 @@ export default class EventNew {
     this._tripDayComponent = null;
 
     document.removeEventListener(`keydown`, this._onEscKeyDown);
+
+    if (this._formCloseHandler) {
+      this._formCloseHandler();
+    }
   }
 
   setDataChangeHandler(dataChangeHandler) {
