@@ -2,6 +2,8 @@ import SmartComponentView from "./smart-component.js";
 import {EVENT_TYPES} from "../const.js";
 import {formatDateForEditor, getTomorrow} from "../util/date.js";
 import flatpickr from "flatpickr";
+import moment from "moment";
+import he from "he";
 
 import "flatpickr/dist/flatpickr.min.css";
 
@@ -93,21 +95,15 @@ const createDestinationsListTemplate = function (destinationsList) {
   return `
     <datalist id="destination-list-1">
       ${destinationsList.map((destination) => `
-        <option value="${destination}"></option>
+        <option value="${he.encode(destination)}"></option>
       `).join(``)}
     </datalist>
   `;
 };
 
 const createEventEditorTemplate = function (data) {
-  const {type, destination, beginDateTime, endDateTime, cost, isFavorite, offers, destinationInfo, destinationsList} = data;
+  const {type, destination, beginDateTime, endDateTime, cost, isFavorite, offers, destinationInfo, destinationsList, isNewEvent} = data;
   const eventTypeInfo = EVENT_TYPES[type];
-
-  const saveButtonDisabled =
-    !beginDateTime ||
-    !endDateTime ||
-    beginDateTime.getTime() > endDateTime.getTime() ||
-    destinationsList.indexOf(destination) === -1;
 
   const eventTypeListTemplate = createEventTypeListTemplate(type);
   const destinationsListTemplate = createDestinationsListTemplate(destinationsList);
@@ -142,7 +138,7 @@ const createEventEditorTemplate = function (data) {
             <label class="event__label  event__type-output" for="event-destination-1">
               ${eventTypeInfo.titlePrefix}
             </label>
-            <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination}" list="destination-list-1">
+            <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${he.encode(destination)}" list="destination-list-1">
             ${destinationsListTemplate}
           </div>
 
@@ -166,8 +162,8 @@ const createEventEditorTemplate = function (data) {
             <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${cost}">
           </div>
 
-          <button class="event__save-btn  btn  btn--blue" type="submit" ${saveButtonDisabled ? `disabled` : ``}>Save</button>
-          <button class="event__reset-btn" type="reset">Delete</button>
+          <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
+          <button class="event__reset-btn" type="reset">${isNewEvent ? `Cancel` : `Delete`}</button>
 
           <input id="event-favorite-1" class="event__favorite-checkbox  visually-hidden" type="checkbox" name="event-favorite" ${isFavorite ? `checked` : ``}>
           <label class="event__favorite-btn" for="event-favorite-1">
@@ -189,7 +185,7 @@ const createEventEditorTemplate = function (data) {
 };
 
 export default class EventEditor extends SmartComponentView {
-  constructor(evt = BLANK_EVENT, destinationInfoCallback, destinationsListCallback, specialOffersCallback) {
+  constructor(evt, destinationInfoCallback, destinationsListCallback, specialOffersCallback) {
     super();
 
     this._destinationInfoCallback = destinationInfoCallback;
@@ -200,6 +196,7 @@ export default class EventEditor extends SmartComponentView {
     this._endDatePicker = null;
 
     this._formSubmitHandler = this._formSubmitHandler.bind(this);
+    this._formResetHandler = this._formResetHandler.bind(this);
     this._formRollupButtonClickHandler = this._formRollupButtonClickHandler.bind(this);
 
     this._typeChangeHandler = this._typeChangeHandler.bind(this);
@@ -210,7 +207,7 @@ export default class EventEditor extends SmartComponentView {
     this._beginDateChangeHandler = this._beginDateChangeHandler.bind(this);
     this._endDateChangeHandler = this._endDateChangeHandler.bind(this);
 
-    this._data = this.convertEventToData(evt);
+    this._data = this.convertEventToData(evt || BLANK_EVENT, !evt);
   }
 
   getTemplate() {
@@ -233,7 +230,7 @@ export default class EventEditor extends SmartComponentView {
   _setInnerHandlers() {
     this.getElement().querySelector(`.event__type-list`).addEventListener(`change`, this._typeChangeHandler);
     this.getElement().querySelector(`.event__input--destination`).addEventListener(`change`, this._destinationChangeHandler);
-    this.getElement().querySelector(`.event__input--price`).addEventListener(`change`, this._priceChangeHandler);
+    this.getElement().querySelector(`.event__input--price`).addEventListener(`input`, this._priceChangeHandler);
     this.getElement().querySelector(`.event__favorite-btn`).addEventListener(`click`, this._favouriteClickHandler);
 
     if (this._data.offers.length > 0) {
@@ -252,6 +249,9 @@ export default class EventEditor extends SmartComponentView {
         this._data.endDateTime,
         this._endDateChangeHandler
     );
+
+    this._saveButtonElement = this.getElement().querySelector(`.event__save-btn`);
+    this._updateSaveEnabled();
   }
 
   _setDatePicker(oldDatePicker, element, value, changeHandler) {
@@ -280,13 +280,13 @@ export default class EventEditor extends SmartComponentView {
   _beginDateChangeHandler(selectedDates) {
     this._updateData({
       beginDateTime: selectedDates[0]
-    });
+    }, true);
   }
 
   _endDateChangeHandler(selectedDates) {
     this._updateData({
       endDateTime: selectedDates[0]
-    });
+    }, true);
   }
 
   _typeChangeHandler(evt) {
@@ -314,7 +314,12 @@ export default class EventEditor extends SmartComponentView {
 
   _formSubmitHandler(evt) {
     evt.preventDefault();
-    this._callback.formSubmit();
+    this._callback.formSubmit(this.convertDataToEvent(this._data));
+  }
+
+  _formResetHandler(evt) {
+    evt.preventDefault();
+    this._callback.formReset(this.convertDataToEvent(this._data));
   }
 
   _formRollupButtonClickHandler(evt) {
@@ -324,9 +329,10 @@ export default class EventEditor extends SmartComponentView {
 
   _favouriteClickHandler(evt) {
     evt.preventDefault();
-    this._updateData({isFavorite: !this._data.isFavorite});
+    const update = {isFavorite: !this._data.isFavorite};
+    this._updateData(update);
     if (this._callback.favoriteClick) {
-      this._callback.favoriteClick();
+      this._callback.favoriteClick(update);
     }
   }
 
@@ -347,6 +353,11 @@ export default class EventEditor extends SmartComponentView {
     this.getElement().querySelector(`form`).addEventListener(`submit`, this._formSubmitHandler);
   }
 
+  setFormResetHandler(callback) {
+    this._callback.formReset = callback;
+    this.getElement().querySelector(`form`).addEventListener(`reset`, this._formResetHandler);
+  }
+
   setRollupButtonClickHandler(callback) {
     this._callback.rollupButtonClick = callback;
     this.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, this._formRollupButtonClickHandler);
@@ -356,22 +367,44 @@ export default class EventEditor extends SmartComponentView {
     this._callback.favoriteClick = callback;
   }
 
-  convertEventToData(evt) {
+  _updateData(update, noRender = false) {
+    super._updateData(update, noRender);
+    if (noRender) {
+      this._updateSaveEnabled();
+    }
+  }
+
+  _updateSaveEnabled() {
+    const {destination, beginDateTime, endDateTime, cost, destinationsList} = this._data;
+
+    this._saveButtonElement.disabled =
+      !moment(beginDateTime).isValid() ||
+      !moment(endDateTime).isValid() ||
+      moment(beginDateTime).isAfter(endDateTime) ||
+      !String(cost).match(/^ *\d+ *$/) ||
+      destinationsList.indexOf(destination) === -1;
+  }
+
+  convertEventToData(evt, isNewEvent) {
     return Object.assign(
         {},
         evt,
         {
           destinationInfo: this.getDestinationInfo(evt.destination),
-          destinationsList: this.getDestinationsList()
+          destinationsList: this.getDestinationsList(),
+          isNewEvent
         }
     );
   }
 
-  convertDataToEvent(data) {
-    const result = Object.assign({}, data);
+  convertDataToEvent(eventData) {
+    const result = Object.assign({}, eventData);
+
+    result.cost = isFinite(+result.cost) ? +result.cost : 0;
 
     delete result.destinationInfo;
     delete result.destinationsList;
+    delete result.isNewEvent;
 
     return result;
   }

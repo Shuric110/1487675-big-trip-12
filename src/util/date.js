@@ -70,7 +70,5 @@ export const truncDate = function (date) {
 };
 
 export const getTomorrow = function () {
-  const tomorrow = truncDate();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  return tomorrow;
+  return moment().startOf(`day`).add(1, `days`).set(`hour`, 12).toDate();
 };

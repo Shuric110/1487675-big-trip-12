@@ -1,7 +1,10 @@
-export const SortMode = {
-  EVENT: `event`,
-  TIME: `time`,
-  PRICE: `price`,
+
+export const UpdateAction = {
+  EVENT_UPDATE: `EVENT_UPDATE`,
+  EVENT_FLAGS_UPDATE: `EVENT_FLAGS_UPDATE`,
+  EVENT_ADD: `EVENT_ADD`,
+  EVENT_DELETE: `EVENT_DELETE`,
+  FILTER_SORT_UPDATE: `FILTER_SORT_UPDATE`
 };
 
 export const EventType = {
@@ -15,25 +18,6 @@ export const EventType = {
   CHECK_IN: `check-in`,
   SIGHTSEEING: `sightseeing`,
   RESTAURANT: `restaurant`
-};
-
-export const SORT_TYPES = {
-  [SortMode.EVENT]: {
-    title: `Event`,
-    compare: null
-  },
-  [SortMode.TIME]: {
-    title: `Time`,
-    compare({beginDateTime: beginA, endDateTime: endA}, {beginDateTime: beginB, endDateTime: endB}) {
-      return (endB.getTime() - beginB.getTime()) - (endA.getTime() - beginA.getTime());
-    }
-  },
-  [SortMode.PRICE]: {
-    title: `Price`,
-    compare({cost: a}, {cost: b}) {
-      return b - a;
-    }
-  },
 };
 
 export const EVENT_TYPES = {

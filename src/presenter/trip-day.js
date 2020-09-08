@@ -95,9 +95,9 @@ export default class TripDay {
     }));
   }
 
-  _onTripEventDataChange(newEvent, isEditing) {
+  _onTripEventDataChange(updateAction, update) {
     if (this._tripEventDataChangeHandler) {
-      this._tripEventDataChangeHandler(newEvent, isEditing);
+      this._tripEventDataChangeHandler(updateAction, update);
     }
   }
 
