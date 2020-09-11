@@ -4,7 +4,15 @@ import EventEditorView from "../view/event-editor.js";
 import {UpdateAction} from "../const.js";
 import {RenderPosition, render, remove} from "../util/render.js";
 
-import {eventIdSequence} from "../mock/event.js";
+
+export const eventIdSequence = {
+  _currentValue: 0,
+
+  getNextValue() {
+    this._currentValue++;
+    return `event-` + this._currentValue;
+  }
+};
 
 
 export default class EventNew {
