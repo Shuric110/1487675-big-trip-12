@@ -9,6 +9,7 @@ export default class Events extends Observable {
 
   setEvents(events) {
     this._events = events.slice();
+    this._notify(UpdateAction.EVENTS_INIT, null);
   }
 
   getEvents() {
@@ -25,8 +26,7 @@ export default class Events extends Observable {
     // Проверка масштаба изменений: если изменилось только свойство isFavorite, то такое
     // изменение будет считаться обновлением флагов
     const oldEventForComparing = Object.assign({}, this._events[index], {isFavorite: update.isFavorite});
-    const isFlagsUpdate = Object.entries(oldEventForComparing).every(([idx, value]) => value === update[idx]
-    );
+    const isFlagsUpdate = Object.entries(oldEventForComparing).every(([idx, value]) => value === update[idx]);
 
     this._events = this._events.slice();
     this._events.splice(index, 1, update);

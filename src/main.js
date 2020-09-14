@@ -11,24 +11,21 @@ import TripPresenter from "./presenter/trip.js";
 
 import {RenderPosition, render, remove} from "./util/render.js";
 
-import {EVENT_OFFERS, generateEvents} from "./mock/event.js";
-import {DESTINATIONS, generateDestinationsInfo} from "./mock/destination.js";
+import Api from "./util/api.js";
+import ApiAdapter from "./util/api-adapter.js";
 
 import {MenuItem} from "./const.js";
 
-const EVENT_COUNT = 25;
+const API_URL = `https://12.ecmascript.pages.academy/big-trip`;
+const API_AUTH_TOKEN = `su2o3os9f0dfdf03l`;
 
-const events = generateEvents(EVENT_COUNT);
-const destinationsInfo = generateDestinationsInfo();
+const api = new Api(API_URL, API_AUTH_TOKEN);
+const apiAdapter = new ApiAdapter(api);
 
 const boardModel = new BoardModel();
 const eventsModel = new EventsModel();
 const destinationModel = new DestinationModel();
 
-eventsModel.setEvents(events);
-destinationModel.setDestinationsInfo(destinationsInfo);
-destinationModel.setDestinationsList(DESTINATIONS);
-destinationModel.setSpecialOffersList(EVENT_OFFERS);
 
 const tripMainElement = document.querySelector(`.trip-main`);
 const tripControlsElement = tripMainElement.querySelector(`.trip-controls`);
@@ -36,7 +33,7 @@ const tripMainContainerElement = document.querySelector(`main .page-body__contai
 
 const filterPresenter = new FilterPresenter(tripControlsElement, boardModel);
 const tripInfoPresenter = new TripInfoPresenter(tripMainElement, eventsModel);
-const tripPresenter = new TripPresenter(tripMainContainerElement, eventsModel, destinationModel, boardModel);
+const tripPresenter = new TripPresenter(tripMainContainerElement, eventsModel, destinationModel, boardModel, apiAdapter);
 
 const addNewButtonElement = document.querySelector(`.trip-main__event-add-btn`);
 const menuComponent = new MenuView();
@@ -85,4 +82,12 @@ render(tripControlsElement, menuComponent, RenderPosition.BEFOREEND);
 
 tripInfoPresenter.init();
 filterPresenter.init();
-tripPresenter.init(events);
+tripPresenter.init();
+
+Promise.all([apiAdapter.getEvents(), apiAdapter.getOffers(), apiAdapter.getDestinations()])
+  .then(([events, offers, destinations]) => {
+    destinationModel.setDestinationsList(Object.keys(destinations));
+    destinationModel.setDestinationsInfo(destinations);
+    destinationModel.setSpecialOffersList(offers);
+    eventsModel.setEvents(events);
+  });

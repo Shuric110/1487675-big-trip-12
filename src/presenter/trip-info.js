@@ -20,7 +20,7 @@ export default class TripInfo {
   }
 
   _onModelEvent(updateAction) {
-    if ([UpdateAction.EVENT_ADD, UpdateAction.EVENT_DELETE, UpdateAction.EVENT_UPDATE].indexOf(updateAction) >= 0) {
+    if ([UpdateAction.EVENT_ADD, UpdateAction.EVENT_DELETE, UpdateAction.EVENT_UPDATE, UpdateAction.EVENTS_INIT].indexOf(updateAction) >= 0) {
       this._renderTripInfo();
     }
   }

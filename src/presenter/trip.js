@@ -1,6 +1,7 @@
 import SortView from "../view/sort.js";
 import TripEventsView from "../view/trip-events.js";
 import NoEventsView from "../view/no-events.js";
+import LoadingView from "../view/loading.js";
 import TripDayListView from "../view/trip-day-list.js";
 
 import TripDayPresenter from "./trip-day.js";
@@ -13,11 +14,12 @@ import {UpdateAction} from "../const.js";
 import {FilterType} from "../model/board.js";
 
 export default class Trip {
-  constructor(container, eventsModel, destinationModel, boardModel) {
+  constructor(container, eventsModel, destinationModel, boardModel, api) {
     this._tripContainer = container;
     this._eventsModel = eventsModel;
     this._destinationModel = destinationModel;
     this._boardModel = boardModel;
+    this._api = api;
 
     this._onSortChange = this._onSortChange.bind(this);
     this._onTripEventDataChange = this._onTripEventDataChange.bind(this);
@@ -33,10 +35,12 @@ export default class Trip {
     this._tripEventsComponent = new TripEventsView();
     this._noEventsComponent = new NoEventsView();
     this._tripDayListComponent = new TripDayListView();
+    this._loadingComponent = new LoadingView();
 
     this._tripDayPresenters = {};
     this._eventPresenters = {};
     this._events = null;
+    this._isLoading = true;
 
     this._eventNewPresenter = new EventNewPresenter(this._tripDayListComponent);
     this._eventNewPresenter.setDataChangeHandler(this._onViewAction);
@@ -97,7 +101,9 @@ export default class Trip {
         this._eventsModel.addEvent(update);
         break;
       case UpdateAction.EVENT_UPDATE:
-        this._eventsModel.updateEvent(update);
+        this._api.updateEvent(update).then((response) => {
+          this._eventsModel.updateEvent(response);
+        });
         break;
       case UpdateAction.EVENT_DELETE:
         this._eventsModel.deleteEvent(update);
@@ -107,6 +113,11 @@ export default class Trip {
 
   _onModelEvent(updateAction, update) {
     switch (updateAction) {
+      case UpdateAction.EVENTS_INIT:
+        this._isLoading = false;
+        this._refreshTrip();
+        break;
+
       case UpdateAction.EVENT_ADD:
       case UpdateAction.EVENT_DELETE:
         this._refreshTrip();
@@ -171,6 +182,10 @@ export default class Trip {
 
   _renderNoEvents() {
     render(this._tripEventsComponent, this._noEventsComponent, RenderPosition.BEFOREEND);
+  }
+
+  _renderLoading() {
+    render(this._tripEventsComponent, this._loadingComponent, RenderPosition.BEFOREEND);
   }
 
   _renderSort() {
@@ -241,9 +256,15 @@ export default class Trip {
     remove(this._tripDayListComponent);
     remove(this._sortComponent);
     remove(this._noEventsComponent);
+    remove(this._loadingComponent);
   }
 
   _renderTrip() {
+    if (this._isLoading) {
+      this._renderLoading();
+      return;
+    }
+
     if (this._getEvents().length === 0) {
       this._renderNoEvents();
       return;

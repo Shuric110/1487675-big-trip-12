@@ -81,8 +81,8 @@ const createDestinationDescriptionTemplate = function (destinationInfo) {
       ${destinationInfo.photos.length === 0 ? `` : `
         <div class="event__photos-container">
           <div class="event__photos-tape">
-            ${destinationInfo.photos.map((photo) => `
-              <img class="event__photo" src="${photo}" alt="Event photo">
+            ${destinationInfo.photos.map(({src, description}) => `
+              <img class="event__photo" src="${src}" alt="${he.encode(description)}">
             `).join(``)}
           </div>
         </div>
@@ -390,8 +390,11 @@ export default class EventEditor extends SmartComponentView {
         {},
         evt,
         {
-          destinationInfo: this.getDestinationInfo(evt.destination),
+          destinationInfo: isNewEvent ? this.getDestinationInfo(evt.destination) : evt.destinationInfo,
           destinationsList: this.getDestinationsList(),
+          offers: this.getSpecialOffers(evt.type).map((offer) => Object.assign({}, offer, {
+            isSelected: evt.offers.some(({name}) => name === offer.name)
+          })),
           isNewEvent
         }
     );
@@ -402,7 +405,13 @@ export default class EventEditor extends SmartComponentView {
 
     result.cost = isFinite(+result.cost) ? +result.cost : 0;
 
-    delete result.destinationInfo;
+    result.offers = result.offers
+      .filter(({isSelected}) => isSelected)
+      .map((offer) => {
+        delete offer.isSelected;
+        return offer;
+      });
+
     delete result.destinationsList;
     delete result.isNewEvent;
 
