@@ -1,5 +1,7 @@
 import {createElementFromTemplate} from "../util/render.js";
 
+const SHAKE_DURATION = 600;
+
 export default class Component {
   constructor() {
     if (new.target === Component) {
@@ -46,5 +48,13 @@ export default class Component {
 
   getHasElement() {
     return this._element !== null;
+  }
+
+  shake(callback) {
+    this.getElement().style.animation = `shake ${SHAKE_DURATION / 1000}s`;
+    setTimeout(() => {
+      this.getElement().style.animation = ``;
+      callback();
+    }, SHAKE_DURATION);
   }
 }

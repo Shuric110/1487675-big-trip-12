@@ -12,6 +12,9 @@ export default class Event {
     this._eventComponent = null;
     this._eventEditorComponent = null;
     this._isEditing = false;
+    this._isSaving = false;
+    this._isDeleting = false;
+    this._abortRollbackData = {};
 
     this._dataChangeHandler = null;
     this._modeChangeHandler = null;
@@ -51,7 +54,7 @@ export default class Event {
     this._specialOffersCallback = specialOffersCallback;
   }
 
-  init(tripEvent, keepOldEditor = true) {
+  init(tripEvent, keepEditor = false) {
     this._tripEvent = Object.assign({}, tripEvent);
 
     const oldEventEditorComponent = this._eventEditorComponent;
@@ -60,17 +63,64 @@ export default class Event {
     this._eventComponent = new EventView(tripEvent);
     this._eventComponent.setRollupButtonClickHandler(this._onRollupButtonClick);
 
-    if (oldEventEditorComponent) {
-      if (!keepOldEditor) {
-        this._eventEditorComponent = null;
+    keepEditor = keepEditor || !this._isSaving;
+    this._isSaving = false;
+
+    if (this._isEditing) {
+      this._eventEditorComponent = null;
+      if (!keepEditor) {
+        replace(this._eventComponent, oldEventEditorComponent);
+        this._isEditing = false;
+      } else {
         this._makeEditor(oldEventEditorComponent);
-        remove(oldEventEditorComponent);
       }
+      remove(oldEventEditorComponent);
     } else {
       replaceOrRender(this._eventContainer, this._eventComponent, oldEventComponent, RenderPosition.BEFOREEND);
     }
 
     remove(oldEventComponent);
+  }
+
+  setSaving() {
+    this._isSaving = true;
+    if (this._isEditing) {
+      this._eventEditorComponent.updateData({
+        isDisabled: true,
+        isSaving: true
+      });
+    }
+  }
+
+  setDeleting() {
+    this._isDeleting = true;
+    if (this._isEditing) {
+      this._eventEditorComponent.updateData({
+        isDisabled: true,
+        isDeleting: true
+      });
+    }
+  }
+
+  setAborting() {
+    const activeComponent = this._isEditing ? this._eventEditorComponent : this._eventComponent;
+
+    activeComponent.shake(() => {
+      this._isSaving = false;
+      this._isDeleting = false;
+      if (this._eventEditorComponent) {
+        this._eventEditorComponent.updateData(
+            Object.assign(
+                {
+                  isDisabled: false,
+                  isSaving: false,
+                  isDeleting: false
+                },
+                this._abortRollbackData
+            )
+        );
+      }
+    });
   }
 
   getDestinationInfo(destination) {
@@ -85,6 +135,13 @@ export default class Event {
     return this._specialOffersCallback ? this._specialOffersCallback(eventType) : [];
   }
 
+  _callDataChangeHandler(updateAction, update, abortRollbackData = {}) {
+    this._abortRollbackData = abortRollbackData;
+    if (this._dataChangeHandler) {
+      this._dataChangeHandler(updateAction, update);
+    }
+  }
+
   _onEscKeyDown(evt) {
     if (evt.key === `Escape` || evt.key === `Esc`) {
       evt.preventDefault();
@@ -93,25 +150,19 @@ export default class Event {
   }
 
   _onFormSubmit(tripEvent) {
-    if (this._dataChangeHandler) {
-      this._dataChangeHandler(
-          UpdateAction.EVENT_UPDATE,
-          tripEvent
-      );
-    }
-
-    this._switchToView();
+    this._callDataChangeHandler(
+        UpdateAction.EVENT_UPDATE,
+        tripEvent
+    );
   }
 
   _onFormReset(tripEvent) {
     this._switchToView();
 
-    if (this._dataChangeHandler) {
-      this._dataChangeHandler(
-          UpdateAction.EVENT_DELETE,
-          tripEvent
-      );
-    }
+    this._callDataChangeHandler(
+        UpdateAction.EVENT_DELETE,
+        tripEvent
+    );
   }
 
   _onRollupButtonClick() {
@@ -124,9 +175,14 @@ export default class Event {
   }
 
   _onEditorFavoriteClick(update) {
-    if (this._dataChangeHandler) {
-      this._dataChangeHandler(UpdateAction.EVENT_UPDATE, Object.assign({}, this._tripEvent, update));
-    }
+    this._callDataChangeHandler(
+        UpdateAction.EVENT_UPDATE,
+        Object.assign({}, this._tripEvent, update),
+        Object.entries(update).reduce(
+            (result, [key]) => Object.assign(result, {[key]: this._tripEvent[key]}),
+            {}
+        )
+    );
   }
 
   _switchToView() {
@@ -146,7 +202,8 @@ export default class Event {
     }
     this._isEditing = true;
 
-    this._eventEditorComponent = new EventEditorView(this._tripEvent, this.getDestinationInfo, this.getDestinationsList, this.getSpecialOffers);
+    this._eventEditorComponent = new EventEditorView(this._tripEvent, {isSaving: this._isSaving, isDeleting: this._isDeleting},
+        this.getDestinationInfo, this.getDestinationsList, this.getSpecialOffers);
 
     this._eventEditorComponent.setFormSubmitHandler(this._onFormSubmit);
     this._eventEditorComponent.setFormResetHandler(this._onFormReset);

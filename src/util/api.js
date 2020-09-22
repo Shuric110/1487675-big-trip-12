@@ -1,6 +1,8 @@
 const Method = {
   GET: `GET`,
-  PUT: `PUT`
+  PUT: `PUT`,
+  POST: `POST`,
+  DELETE: `DELETE`
 };
 
 const SuccessHTTPStatusRange = {
@@ -44,6 +46,23 @@ export default class Api {
       headers: new Headers({"Content-Type": `application/json`})
     })
       .then(Api.toJSON);
+  }
+
+  addPoint(point) {
+    return this._query({
+      url: `points`,
+      method: Method.POST,
+      body: JSON.stringify(point),
+      headers: new Headers({"Content-Type": `application/json`})
+    })
+      .then(Api.toJSON);
+  }
+
+  deletePoint(id) {
+    return this._query({
+      url: `points/${id}`,
+      method: Method.DELETE
+    });
   }
 
   _query({

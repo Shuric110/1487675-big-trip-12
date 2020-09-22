@@ -30,7 +30,7 @@ export default class SmartComponent extends Component {
     this._restoreHandlers();
   }
 
-  _updateData(update, noRender = false) {
+  updateData(update, noRender = false) {
     if (!update) {
       return;
     }

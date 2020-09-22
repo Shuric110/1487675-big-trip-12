@@ -83,7 +83,7 @@ export default class TripDay {
   }
 
   _renderEvents() {
-    this._eventPresenters = Object.fromEntries(this._tripEvents.map((tripEvent) => {
+    this._tripEvents.forEach((tripEvent) => {
       const eventPresenter = new EventPresenter(this._tripDayComponent);
       eventPresenter.setDestinationInfoCallback(this.getDestinationInfo);
       eventPresenter.setDestinationsListCallback(this.getDestinationsList);
@@ -91,8 +91,8 @@ export default class TripDay {
       eventPresenter.setDataChangeHandler(this._onTripEventDataChange);
       eventPresenter.setModeChangeHandler(this._onTripEventModeChange);
       eventPresenter.init(tripEvent);
-      return [tripEvent.id, eventPresenter];
-    }));
+      this._eventPresenters[tripEvent.id] = eventPresenter;
+    });
   }
 
   _onTripEventDataChange(updateAction, update) {
