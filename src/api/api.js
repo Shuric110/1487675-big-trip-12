@@ -19,13 +19,6 @@ export default class Api {
   getPoints() {
     return this._query({url: `points`})
       .then(Api.toJSON);
-    /*
-      .then((result) => {
-        return new Promise((resolve) => {
-          setTimeout(() => resolve(result), 2000);
-        });
-      });
-    */
   }
 
   getOffers() {
@@ -63,6 +56,16 @@ export default class Api {
       url: `points/${id}`,
       method: Method.DELETE
     });
+  }
+
+  sync(points) {
+    return this._query({
+      url: `points/sync`,
+      method: Method.POST,
+      body: JSON.stringify(points),
+      headers: new Headers({"Content-Type": `application/json`})
+    })
+      .then(Api.toJSON);
   }
 
   _query({

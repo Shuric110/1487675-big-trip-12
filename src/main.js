@@ -11,16 +11,24 @@ import TripPresenter from "./presenter/trip.js";
 
 import {RenderPosition, render, remove} from "./util/render.js";
 
-import Api from "./util/api.js";
-import ApiAdapter from "./util/api-adapter.js";
+import Api from "./api/api.js";
+import ApiAdapter from "./api/api-adapter.js";
+import Store from "./api/store.js";
+import Provider from "./api/provider.js";
 
 import {MenuItem} from "./const.js";
 
 const API_URL = `https://12.ecmascript.pages.academy/big-trip`;
 const API_AUTH_TOKEN = `su2o3os9f0dfdf03l`;
 
+const STORE_PREFIX = `bigtrip-localstorage`;
+const STORE_VER = `v12`;
+const STORE_NAME = `${STORE_PREFIX}-${STORE_VER}`;
+
 const api = new Api(API_URL, API_AUTH_TOKEN);
-const apiAdapter = new ApiAdapter(api);
+const store = new Store(STORE_NAME, window.localStorage);
+const apiWithProvider = new Provider(api, store);
+const apiAdapter = new ApiAdapter(apiWithProvider);
 
 const boardModel = new BoardModel();
 const eventsModel = new EventsModel();
@@ -31,7 +39,7 @@ const tripMainElement = document.querySelector(`.trip-main`);
 const tripControlsElement = tripMainElement.querySelector(`.trip-controls`);
 const tripMainContainerElement = document.querySelector(`main .page-body__container`);
 
-const filterPresenter = new FilterPresenter(tripControlsElement, boardModel);
+const filterPresenter = new FilterPresenter(tripControlsElement, boardModel, eventsModel);
 const tripInfoPresenter = new TripInfoPresenter(tripMainElement, eventsModel);
 const tripPresenter = new TripPresenter(tripMainContainerElement, eventsModel, destinationModel, boardModel, apiAdapter);
 
@@ -75,9 +83,6 @@ const onNewEventFormClose = function () {
   addNewButtonElement.disabled = false;
 };
 
-menuComponent.setMenuClickHandler(onMenuClick);
-addNewButtonElement.addEventListener(`click`, onNewEventClick);
-
 render(tripControlsElement, menuComponent, RenderPosition.BEFOREEND);
 
 tripInfoPresenter.init();
@@ -90,4 +95,33 @@ Promise.all([apiAdapter.getEvents(), apiAdapter.getOffers(), apiAdapter.getDesti
     destinationModel.setDestinationsInfo(destinations);
     destinationModel.setSpecialOffersList(offers);
     eventsModel.setEvents(events);
+  })
+  .catch(() => {
+    eventsModel.setEvents([]);
+  })
+  .finally(() => {
+    menuComponent.setMenuClickHandler(onMenuClick);
+    addNewButtonElement.addEventListener(`click`, onNewEventClick);
   });
+
+window.addEventListener(`load`, () => {
+  navigator.serviceWorker.register(`/sw.js`)
+    .then(() => {
+      console.log(`ServiceWorker available`); // eslint-disable-line
+    }).catch(() => {
+      console.error(`ServiceWorker isn't available`); // eslint-disable-line
+    });
+});
+
+window.addEventListener(`online`, () => {
+  document.title = document.title.replace(` [offline]`, ``);
+  apiWithProvider.sync();
+});
+
+window.addEventListener(`offline`, () => {
+  document.title += ` [offline]`;
+});
+
+if (!window.navigator.onLine) {
+  document.title += ` [offline]`;
+}
