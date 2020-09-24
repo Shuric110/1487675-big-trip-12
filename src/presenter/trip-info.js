@@ -57,7 +57,7 @@ export default class TripInfo {
       }
 
       totalCost += cost;
-      totalCost += offers.filter(({isSelected}) => isSelected).reduce((accum, {cost: offerCost}) => accum + offerCost, 0);
+      totalCost += offers.reduce((accum, {cost: offerCost}) => accum + offerCost, 0);
     }
 
     const routeSummary = route.length <= 3

@@ -3,6 +3,8 @@ import {EVENT_TYPES} from "../const.js";
 import {formatDateTimeAsISOString, formatDateAsTimeHM, formatIntervalDuration} from "../util/date.js";
 import he from "he";
 
+const MAX_OFFERS = 3;
+
 export default class Event extends ComponentView {
   constructor(evt) {
     super();
@@ -20,7 +22,7 @@ export default class Event extends ComponentView {
       <h4 class="visually-hidden">Offers:</h4>
       <ul class="event__selected-offers">
         ${offers
-          .slice(0, 2)
+          .slice(0, MAX_OFFERS)
           .map(({name, cost: offerCost}) =>
             `
           <li class="event__offer">
