@@ -23,6 +23,15 @@ export default class ApiAdapter {
       .then(ApiAdapter.convertApiPointToEvent);
   }
 
+  addEvent(evt) {
+    return this._api.addPoint(ApiAdapter.convertEventToApiPoint(evt))
+      .then(ApiAdapter.convertApiPointToEvent);
+  }
+
+  deleteEvent(evt) {
+    return this._api.deletePoint(evt.id);
+  }
+
   static convertApiPointsToEvents(apiPoints) {
     return apiPoints.map((apiPoint) => ApiAdapter.convertApiPointToEvent(apiPoint));
   }

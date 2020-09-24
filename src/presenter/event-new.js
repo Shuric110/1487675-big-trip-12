@@ -5,16 +5,6 @@ import {UpdateAction} from "../const.js";
 import {RenderPosition, render, remove} from "../util/render.js";
 
 
-export const eventIdSequence = {
-  _currentValue: 0,
-
-  getNextValue() {
-    this._currentValue++;
-    return `event-` + this._currentValue;
-  }
-};
-
-
 export default class EventNew {
   constructor(tripDayContainer) {
     this._tripDayContainer = tripDayContainer;
@@ -45,7 +35,7 @@ export default class EventNew {
     this._formCloseHandler = formCloseHandler;
 
     this._tripDayComponent = new TripDayView();
-    this._eventEditorComponent = new EventEditorView(this._tripEvent, this.getDestinationInfo, this.getDestinationsList, this.getSpecialOffers);
+    this._eventEditorComponent = new EventEditorView(this._tripEvent, null, this.getDestinationInfo, this.getDestinationsList, this.getSpecialOffers);
 
     this._eventEditorComponent.setFormSubmitHandler(this._onFormSubmit);
     this._eventEditorComponent.setFormResetHandler(this._onFormReset);
@@ -57,17 +47,36 @@ export default class EventNew {
   }
 
   destroy() {
-    remove(this._eventEditorComponent);
-    remove(this._tripDayComponent);
+    if (this._eventEditorComponent) {
+      remove(this._eventEditorComponent);
+      remove(this._tripDayComponent);
 
-    this._eventEditorComponent = null;
-    this._tripDayComponent = null;
+      this._eventEditorComponent = null;
+      this._tripDayComponent = null;
 
-    document.removeEventListener(`keydown`, this._onEscKeyDown);
+      document.removeEventListener(`keydown`, this._onEscKeyDown);
 
-    if (this._formCloseHandler) {
-      this._formCloseHandler();
+      if (this._formCloseHandler) {
+        this._formCloseHandler();
+      }
     }
+  }
+
+  setSaving() {
+    this._eventEditorComponent.updateData({
+      isDisabled: true,
+      isSaving: true
+    });
+  }
+
+  setAborting() {
+    this._eventEditorComponent.shake(() => {
+      this._eventEditorComponent.updateData({
+        isDisabled: false,
+        isSaving: false,
+        isDeleting: false
+      });
+    });
   }
 
   setDataChangeHandler(dataChangeHandler) {
@@ -115,12 +124,10 @@ export default class EventNew {
   }
 
   _onFormSubmit(tripEvent) {
-    this.destroy();
-
     if (this._dataChangeHandler) {
       this._dataChangeHandler(
           UpdateAction.EVENT_ADD,
-          Object.assign({id: eventIdSequence.getNextValue()}, tripEvent)
+          tripEvent
       );
     }
   }

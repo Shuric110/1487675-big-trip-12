@@ -45,12 +45,12 @@ const createEventTypeListTemplate = function (selectedEventType) {
   `;
 };
 
-const createOfferTemplate = function (offer, index) {
+const createOfferTemplate = function (offer, index, isDisabled) {
   const {name, cost, isSelected} = offer;
   return `
     <div class="event__offer-selector">
       <input class="event__offer-checkbox  visually-hidden" id="event-offer-luggage-${index}" type="checkbox"
-        name="event-offer-luggage" data-index="${index}" ${isSelected ? `checked` : ``}>
+        name="event-offer-luggage" data-index="${index}" ${isSelected ? `checked` : ``} ${isDisabled ? `disabled` : ``}>
       <label class="event__offer-label" for="event-offer-luggage-${index}">
         <span class="event__offer-title">${name}</span>
         &plus;
@@ -60,13 +60,13 @@ const createOfferTemplate = function (offer, index) {
   `;
 };
 
-const createOffersTemplate = function (offers) {
+const createOffersTemplate = function (offers, isDisabled) {
   return offers.length === 0 ? `` : `
     <section class="event__section  event__section--offers">
       <h3 class="event__section-title  event__section-title--offers">Offers</h3>
 
       <div class="event__available-offers">
-        ${offers.map((offer, index) => createOfferTemplate(offer, index)).join(``)}
+        ${offers.map((offer, index) => createOfferTemplate(offer, index, isDisabled)).join(``)}
       </div>
     </section>
   `;
@@ -102,13 +102,14 @@ const createDestinationsListTemplate = function (destinationsList) {
 };
 
 const createEventEditorTemplate = function (data) {
-  const {type, destination, beginDateTime, endDateTime, cost, isFavorite, offers, destinationInfo, destinationsList, isNewEvent} = data;
+  const {type, destination, beginDateTime, endDateTime, cost, isFavorite, offers, destinationInfo, destinationsList,
+    isNewEvent, isDisabled, isSaving, isDeleting} = data;
   const eventTypeInfo = EVENT_TYPES[type];
 
   const eventTypeListTemplate = createEventTypeListTemplate(type);
   const destinationsListTemplate = createDestinationsListTemplate(destinationsList);
 
-  const offersTemplate = createOffersTemplate(offers);
+  const offersTemplate = createOffersTemplate(offers, isDisabled);
   const destinationDescriptionTemplate = createDestinationDescriptionTemplate(destinationInfo);
 
   const eventsDetailsTemplate = offersTemplate || destinationDescriptionTemplate ? `
@@ -127,7 +128,7 @@ const createEventEditorTemplate = function (data) {
               <span class="visually-hidden">Choose event type</span>
               <img class="event__type-icon" width="17" height="17" src="img/icons/${type}.png" alt="Event type icon">
             </label>
-            <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox">
+            <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox" ${isDisabled ? `disabled` : ``}>
 
             <div class="event__type-list">
               ${eventTypeListTemplate}
@@ -138,7 +139,9 @@ const createEventEditorTemplate = function (data) {
             <label class="event__label  event__type-output" for="event-destination-1">
               ${eventTypeInfo.titlePrefix}
             </label>
-            <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${he.encode(destination)}" list="destination-list-1">
+            <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination"
+              value="${he.encode(destination)}" list="destination-list-1" ${isDisabled ? `disabled` : ``}
+            >
             ${destinationsListTemplate}
           </div>
 
@@ -146,12 +149,16 @@ const createEventEditorTemplate = function (data) {
             <label class="visually-hidden" for="event-start-time-1">
               From
             </label>
-            <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${formatDateForEditor(beginDateTime)}">
+            <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time"
+              value="${formatDateForEditor(beginDateTime)}" ${isDisabled ? `disabled` : ``}
+            >
             &mdash;
             <label class="visually-hidden" for="event-end-time-1">
               To
             </label>
-            <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${formatDateForEditor(endDateTime)}">
+            <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time"
+              value="${formatDateForEditor(endDateTime)}" ${isDisabled ? `disabled` : ``}
+            >
           </div>
 
           <div class="event__field-group  event__field-group--price">
@@ -159,13 +166,15 @@ const createEventEditorTemplate = function (data) {
               <span class="visually-hidden">Price</span>
               &euro;
             </label>
-            <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${cost}">
+            <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${cost}" ${isDisabled ? `disabled` : ``}>
           </div>
 
-          <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
-          <button class="event__reset-btn" type="reset">${isNewEvent ? `Cancel` : `Delete`}</button>
+          <button class="event__save-btn  btn  btn--blue" type="submit">${isSaving ? `Saving...` : `Save`}</button>
+          <button class="event__reset-btn" type="reset" ${isDisabled ? `disabled` : ``}>
+            ${isNewEvent ? `Cancel` : `${isDeleting ? `Deleting...` : `Delete`}`}
+          </button>
 
-          <input id="event-favorite-1" class="event__favorite-checkbox  visually-hidden" type="checkbox" name="event-favorite" ${isFavorite ? `checked` : ``}>
+          <input id="event-favorite-1" class="event__favorite-checkbox  visually-hidden" type="checkbox" name="event-favorite" ${isFavorite ? `checked` : ``} ${isDisabled ? `disabled` : ``}>
           <label class="event__favorite-btn" for="event-favorite-1">
             <span class="visually-hidden">Add to favorite</span>
             <svg class="event__favorite-icon" width="28" height="28" viewBox="0 0 28 28">
@@ -185,7 +194,7 @@ const createEventEditorTemplate = function (data) {
 };
 
 export default class EventEditor extends SmartComponentView {
-  constructor(evt, destinationInfoCallback, destinationsListCallback, specialOffersCallback) {
+  constructor(evt, state, destinationInfoCallback, destinationsListCallback, specialOffersCallback) {
     super();
 
     this._destinationInfoCallback = destinationInfoCallback;
@@ -207,7 +216,8 @@ export default class EventEditor extends SmartComponentView {
     this._beginDateChangeHandler = this._beginDateChangeHandler.bind(this);
     this._endDateChangeHandler = this._endDateChangeHandler.bind(this);
 
-    this._data = this.convertEventToData(evt || BLANK_EVENT, !evt);
+    this._data = this.convertEventToData(evt || BLANK_EVENT,
+        Object.assign({isNewEvent: !evt}, state));
   }
 
   getTemplate() {
@@ -278,13 +288,13 @@ export default class EventEditor extends SmartComponentView {
   }
 
   _beginDateChangeHandler(selectedDates) {
-    this._updateData({
+    this.updateData({
       beginDateTime: selectedDates[0]
     }, true);
   }
 
   _endDateChangeHandler(selectedDates) {
-    this._updateData({
+    this.updateData({
       endDateTime: selectedDates[0]
     }, true);
   }
@@ -292,7 +302,7 @@ export default class EventEditor extends SmartComponentView {
   _typeChangeHandler(evt) {
     if (evt.target.value) {
       evt.preventDefault();
-      this._updateData({
+      this.updateData({
         type: evt.target.value,
         offers: this.getSpecialOffers(evt.target.value)
       });
@@ -301,7 +311,7 @@ export default class EventEditor extends SmartComponentView {
 
   _destinationChangeHandler(evt) {
     evt.preventDefault();
-    this._updateData({
+    this.updateData({
       destination: evt.target.value,
       destinationInfo: this.getDestinationInfo(evt.target.value)
     });
@@ -309,7 +319,7 @@ export default class EventEditor extends SmartComponentView {
 
   _priceChangeHandler(evt) {
     evt.preventDefault();
-    this._updateData({cost: evt.target.value}, true);
+    this.updateData({cost: evt.target.value}, true);
   }
 
   _formSubmitHandler(evt) {
@@ -329,10 +339,12 @@ export default class EventEditor extends SmartComponentView {
 
   _favouriteClickHandler(evt) {
     evt.preventDefault();
-    const update = {isFavorite: !this._data.isFavorite};
-    this._updateData(update);
-    if (this._callback.favoriteClick) {
-      this._callback.favoriteClick(update);
+    if (!this._data.isDisabled) {
+      const update = {isFavorite: !this._data.isFavorite};
+      this.updateData(update);
+      if (this._callback.favoriteClick) {
+        this._callback.favoriteClick(update);
+      }
     }
   }
 
@@ -344,7 +356,7 @@ export default class EventEditor extends SmartComponentView {
           offers[evt.target.dataset.index],
           {isSelected: !offers[evt.target.dataset.index].isSelected}
       );
-      this._updateData({offers}, true);
+      this.updateData({offers}, true);
     }
   }
 
@@ -367,17 +379,18 @@ export default class EventEditor extends SmartComponentView {
     this._callback.favoriteClick = callback;
   }
 
-  _updateData(update, noRender = false) {
-    super._updateData(update, noRender);
+  updateData(update, noRender = false) {
+    super.updateData(update, noRender);
     if (noRender) {
       this._updateSaveEnabled();
     }
   }
 
   _updateSaveEnabled() {
-    const {destination, beginDateTime, endDateTime, cost, destinationsList} = this._data;
+    const {destination, beginDateTime, endDateTime, cost, destinationsList, isDisabled} = this._data;
 
     this._saveButtonElement.disabled =
+      isDisabled ||
       !moment(beginDateTime).isValid() ||
       !moment(endDateTime).isValid() ||
       moment(beginDateTime).isAfter(endDateTime) ||
@@ -385,7 +398,9 @@ export default class EventEditor extends SmartComponentView {
       destinationsList.indexOf(destination) === -1;
   }
 
-  convertEventToData(evt, isNewEvent) {
+  convertEventToData(evt, state) {
+    const {isNewEvent = false, isSaving = false, isDeleting = false} = state;
+
     return Object.assign(
         {},
         evt,
@@ -395,7 +410,10 @@ export default class EventEditor extends SmartComponentView {
           offers: this.getSpecialOffers(evt.type).map((offer) => Object.assign({}, offer, {
             isSelected: evt.offers.some(({name}) => name === offer.name)
           })),
-          isNewEvent
+          isNewEvent,
+          isDisabled: isSaving || isDeleting,
+          isSaving,
+          isDeleting
         }
     );
   }
@@ -414,6 +432,9 @@ export default class EventEditor extends SmartComponentView {
 
     delete result.destinationsList;
     delete result.isNewEvent;
+    delete result.isDisabled;
+    delete result.isSaving;
+    delete result.isDeleting;
 
     return result;
   }

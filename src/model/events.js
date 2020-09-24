@@ -25,8 +25,10 @@ export default class Events extends Observable {
 
     // Проверка масштаба изменений: если изменилось только свойство isFavorite, то такое
     // изменение будет считаться обновлением флагов
-    const oldEventForComparing = Object.assign({}, this._events[index], {isFavorite: update.isFavorite});
-    const isFlagsUpdate = Object.entries(oldEventForComparing).every(([idx, value]) => value === update[idx]);
+    const oldEvent = this._events[index];
+    const oldEventForComparing = Object.assign({}, oldEvent, {isFavorite: update.isFavorite});
+    const isFlagsUpdate = JSON.stringify(oldEventForComparing) === JSON.stringify(update)
+      && update.isFavorite !== oldEvent.isFavorite;
 
     this._events = this._events.slice();
     this._events.splice(index, 1, update);

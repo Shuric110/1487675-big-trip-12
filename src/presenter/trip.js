@@ -9,7 +9,6 @@ import EventNewPresenter from "./event-new.js";
 
 import {truncDate} from "../util/date.js";
 import {RenderPosition, render, remove} from "../util/render.js";
-import {updateItem} from "../util/common.js";
 import {UpdateAction} from "../const.js";
 import {FilterType} from "../model/board.js";
 
@@ -22,7 +21,6 @@ export default class Trip {
     this._api = api;
 
     this._onSortChange = this._onSortChange.bind(this);
-    this._onTripEventDataChange = this._onTripEventDataChange.bind(this);
     this._onTripEventModeChange = this._onTripEventModeChange.bind(this);
     this._onViewAction = this._onViewAction.bind(this);
     this._onModelEvent = this._onModelEvent.bind(this);
@@ -98,15 +96,32 @@ export default class Trip {
   _onViewAction(updateAction, update) {
     switch (updateAction) {
       case UpdateAction.EVENT_ADD:
-        this._eventsModel.addEvent(update);
+        this._eventNewPresenter.setSaving();
+        this._api.addEvent(update)
+          .then((response) => {
+            this._eventsModel.addEvent(response);
+          })
+          .catch(() => {
+            this._eventNewPresenter.setAborting();
+          });
         break;
       case UpdateAction.EVENT_UPDATE:
+        this._eventPresenters[update.id].setSaving();
         this._api.updateEvent(update).then((response) => {
           this._eventsModel.updateEvent(response);
+        })
+        .catch(() => {
+          this._eventPresenters[update.id].setAborting();
         });
         break;
       case UpdateAction.EVENT_DELETE:
-        this._eventsModel.deleteEvent(update);
+        this._eventPresenters[update.id].setDeleting();
+        this._api.deleteEvent(update).then(() => {
+          this._eventsModel.deleteEvent(update);
+        })
+        .catch(() => {
+          this._eventPresenters[update.id].setAborting();
+        });
         break;
     }
   }
@@ -124,7 +139,7 @@ export default class Trip {
         break;
 
       case UpdateAction.EVENT_FLAGS_UPDATE:
-        this._eventPresenters[update.id].init(update);
+        this._eventPresenters[update.id].init(update, true);
         break;
 
       case UpdateAction.EVENT_UPDATE:
@@ -223,14 +238,6 @@ export default class Trip {
     }
 
     this._boardModel.setSort(sortType);
-  }
-
-  _onTripEventDataChange(newEvent, isEditing) {
-    updateItem(this._events, newEvent);
-    updateItem(this._sourceEvents, newEvent);
-    if (!isEditing) {
-      this._eventPresenters[newEvent.id].init(newEvent);
-    }
   }
 
   _onTripEventModeChange(tripEventEditorPresenter, isEditing) {
