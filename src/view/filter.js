@@ -24,10 +24,10 @@ export default class Filter extends ComponentView {
       <div>
         <h2 class="visually-hidden">Filter events</h2>
         <form class="trip-filters" action="#" method="get">
-          ${this._filterDefinitions.map(({code, title}) => `
+          ${this._filterDefinitions.map(({code, title, enabled}) => `
             <div class="trip-filters__filter">
               <input id="filter-${code}" class="trip-filters__filter-input  visually-hidden" type="radio" name="trip-filter"
-                value="${code}" ${code === this._currentFilter.code ? `checked` : ``}
+                value="${code}" ${code === this._currentFilter.code ? `checked` : ``} ${enabled ? `` : `disabled`}
               >
               <label class="trip-filters__filter-label" for="filter-${code}">${title}</label>
             </div>
