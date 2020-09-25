@@ -46,7 +46,7 @@ export default class TripInfo {
 
     events = events.slice().sort(({beginDateTime: a}, {beginDateTime: b}) => a.getTime() - b.getTime());
 
-    let route = [];
+    const route = [];
     let currentDestination = ``;
     let totalCost = 0;
 
