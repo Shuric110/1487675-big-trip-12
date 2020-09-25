@@ -1,4 +1,5 @@
 import {createElementFromTemplate} from "../util/render.js";
+import {MILLISECONDS_PER_SECOND} from "../util/date.js";
 
 const SHAKE_DURATION = 600;
 
@@ -51,7 +52,7 @@ export default class Component {
   }
 
   shake(callback) {
-    this.getElement().style.animation = `shake ${SHAKE_DURATION / 1000}s`;
+    this.getElement().style.animation = `shake ${SHAKE_DURATION / MILLISECONDS_PER_SECOND}s`;
     setTimeout(() => {
       this.getElement().style.animation = ``;
       callback();

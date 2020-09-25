@@ -78,7 +78,7 @@ export default class Trip {
 
   _cancelEventEditors() {
     this.cancelCreateTripEvent();
-    Object.values(this._eventPresenters).forEach(function (eventPresenter) {
+    Object.values(this._eventPresenters).forEach((eventPresenter) => {
       eventPresenter.resetView();
     });
   }
@@ -185,7 +185,7 @@ export default class Trip {
 
   _renderTripDay(date, number, tripEvents) {
     const tripDayPresenter = new TripDayPresenter(this._tripDayListComponent, date, number);
-    this._tripDayPresenters[`day-` + date] = tripDayPresenter;
+    this._tripDayPresenters[`day-${date}`] = tripDayPresenter;
     tripDayPresenter.setTripEventDataChangeHandler(this._onViewAction);
     tripDayPresenter.setTripEventModeChangeHandler(this._onTripEventModeChange);
     tripDayPresenter.setDestinationInfoCallback(this.getDestinationInfo);
@@ -217,7 +217,7 @@ export default class Trip {
     } else {
       const eventsByDate = {};
 
-      for (let evt of events) {
+      for (const evt of events) {
         const eventDate = truncDate(evt.beginDateTime).getTime();
         if (!eventsByDate[eventDate]) {
           eventsByDate[eventDate] = [evt];

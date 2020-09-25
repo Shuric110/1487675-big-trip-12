@@ -1,5 +1,11 @@
 import moment from "moment";
 
+export const SECONDS_PER_MINUTE = 60;
+export const MINUTES_PER_HOUR = 60;
+export const MILLISECONDS_PER_SECOND = 1000;
+const HOURS_PER_DAY = 24;
+const MIDDAY_HOURS = 12;
+
 const formatDateTime = function (date, format) {
   return (date instanceof Date)
     ? moment(date).format(format)
@@ -29,15 +35,15 @@ export const formatDateForEditor = function (date) {
 export const formatDuration = function (durationMinutes) {
   let duration = durationMinutes;
 
-  const minutes = duration % 60;
-  duration = (duration - minutes) / 60;
+  const minutes = duration % MINUTES_PER_HOUR;
+  duration = (duration - minutes) / MINUTES_PER_HOUR;
   let result = `${minutes}M`;
   if (duration === 0) {
     return result;
   }
 
-  const hours = duration % 24;
-  duration = (duration - hours) / 24;
+  const hours = duration % HOURS_PER_DAY;
+  duration = (duration - hours) / HOURS_PER_DAY;
   result = `${hours}H ${result}`;
   if (duration === 0) {
     return result;
@@ -48,7 +54,7 @@ export const formatDuration = function (durationMinutes) {
 };
 
 export const formatIntervalDuration = function (beginDate, endDate) {
-  return formatDuration(Math.floor((endDate.getTime() - beginDate.getTime()) / 1000 / 60));
+  return formatDuration(Math.floor((endDate.getTime() - beginDate.getTime()) / MILLISECONDS_PER_SECOND / SECONDS_PER_MINUTE));
 };
 
 export const formatDatesRange = function (beginDate, endDate) {
@@ -57,14 +63,13 @@ export const formatDatesRange = function (beginDate, endDate) {
   const endMonth = formatDateTime(endDate, `MMM`);
   const endDay = endDate.getDate();
 
-  let beginDateStr = beginMonth + ` ` + beginDay;
+  const beginDateResult = `${beginMonth} ${beginDay}`;
   if (beginMonth === endMonth && beginDay === endDay) {
-    return beginDateStr;
+    return beginDateResult;
   }
 
-  return beginDateStr + ` &mdash; ` +
-    (beginMonth === endMonth ? `` : endMonth + ` `) +
-    endDay;
+  const endDateResult = beginMonth !== endMonth ? `${endMonth} ${endDay}` : endDay;
+  return `${beginDateResult} — ${endDateResult}`;
 };
 
 export const truncDate = function (date) {
@@ -74,5 +79,5 @@ export const truncDate = function (date) {
 };
 
 export const getTomorrow = function () {
-  return moment().startOf(`day`).add(1, `days`).set(`hour`, 12).toDate();
+  return moment().startOf(`day`).add(1, `days`).set(`hour`, MIDDAY_HOURS).toDate();
 };

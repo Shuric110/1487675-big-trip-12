@@ -51,7 +51,7 @@ export default class Store {
   getSubStore(key) {
     let subStore = this._subStores[key];
     if (!subStore) {
-      subStore = new Store(this._storeKey + `-` + key, this._storage);
+      subStore = new Store(`${this._storeKey}-${key}`, this._storage);
       this._subStores[key] = subStore;
     }
     return subStore;
