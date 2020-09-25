@@ -56,6 +56,7 @@ const switchPage = function (menuItem) {
   switch (menuItem) {
     case MenuItem.TABLE:
       remove(staticticsComponent);
+      staticticsComponent = null;
       tripPresenter.init();
       break;
     case MenuItem.STATISTICS:

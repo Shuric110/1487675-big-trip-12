@@ -67,11 +67,10 @@ export default class Event {
     this._isSaving = false;
 
     if (this._isEditing) {
-      this._eventEditorComponent = null;
       if (!keepEditor) {
-        replace(this._eventComponent, oldEventEditorComponent);
-        this._isEditing = false;
+        this._switchToView();
       } else {
+        this._eventEditorComponent = null;
         this._makeEditor(oldEventEditorComponent);
       }
       remove(oldEventEditorComponent);

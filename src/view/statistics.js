@@ -1,7 +1,7 @@
 import ComponentView from "./component.js";
 
 import {EventType, EVENT_TYPES} from "../const.js";
-import {formatDuration} from "../util/date.js";
+import {formatDuration, MILLISECONDS_PER_SECOND, SECONDS_PER_MINUTE} from "../util/date.js";
 
 import Chart from "chart.js";
 import ChartDataLabels from 'chartjs-plugin-datalabels';
@@ -234,14 +234,11 @@ const renderTimeSpentChart = function (timeSpentCtx, timeSpentStatistics) {
 const calculateStatistics = function (events) {
   const statistics = {};
 
-  for (let evt of events) {
-    let statItem = {cost: 0, timeMinutes: 0, count: 0};
-    if (evt.type in statistics) {
-      statItem = statistics[evt.type];
-    }
+  for (const evt of events) {
+    const statItem = statistics[evt.type] || {cost: 0, timeMinutes: 0, count: 0};
 
     statItem.cost += evt.cost;
-    statItem.timeMinutes += Math.floor((evt.endDateTime.getTime() - evt.beginDateTime.getTime()) / 1000 / 60);
+    statItem.timeMinutes += Math.floor((evt.endDateTime.getTime() - evt.beginDateTime.getTime()) / MILLISECONDS_PER_SECOND / SECONDS_PER_MINUTE);
     statItem.count++;
 
     statistics[evt.type] = statItem;

@@ -50,19 +50,19 @@ export default class TripInfo {
     let currentDestination = ``;
     let totalCost = 0;
 
-    for (let {destination, cost, offers} of events) {
+    for (const {destination, cost, offers} of events) {
       if (destination !== currentDestination) {
         currentDestination = destination;
         route.push(destination);
       }
 
       totalCost += cost;
-      totalCost += offers.filter(({isSelected}) => isSelected).reduce((accum, {cost: offerCost}) => accum + offerCost, 0);
+      totalCost += offers.reduce((accum, {cost: offerCost}) => accum + offerCost, 0);
     }
 
     const routeSummary = route.length <= 3
       ? route.join(` — `)
-      : route[0] + ` — ... — ` + route[route.length - 1];
+      : `${route[0]} — ... — ${route[route.length - 1]}`;
 
     const journeyDates = formatDatesRange(events[0].beginDateTime, events[events.length - 1].endDateTime);
 

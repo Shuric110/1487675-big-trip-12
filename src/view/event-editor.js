@@ -1,5 +1,5 @@
 import SmartComponentView from "./smart-component.js";
-import {EVENT_TYPES} from "../const.js";
+import {EventType, EVENT_TYPES} from "../const.js";
 import {formatDateForEditor, getTomorrow} from "../util/date.js";
 import flatpickr from "flatpickr";
 import moment from "moment";
@@ -8,7 +8,7 @@ import he from "he";
 import "flatpickr/dist/flatpickr.min.css";
 
 const BLANK_EVENT = {
-  type: `flight`,
+  type: EventType.FLIGHT,
   destination: ``,
   beginDateTime: getTomorrow(),
   endDateTime: getTomorrow(),
@@ -277,11 +277,11 @@ export default class EventEditor extends SmartComponentView {
     return flatpickr(
         element,
         {
-          'dateFormat': `d/m/y H:i`,
-          'enableTime': true,
-          'time_24hr': true,
-          'defaultDate': value,
-          'onChange': changeHandler
+          "dateFormat": `d/m/y H:i`,
+          "enableTime": true,
+          "time_24hr": true,
+          "defaultDate": value,
+          "onChange": changeHandler
         }
     );
 
