@@ -19,7 +19,7 @@ import Provider from "./api/provider.js";
 import {MenuItem} from "./const.js";
 
 const API_URL = `https://12.ecmascript.pages.academy/big-trip`;
-const API_AUTH_TOKEN = `su2o3os9f0dfdf03l`; // + `a`;
+const API_AUTH_TOKEN = `su2o3os9f0dfdf03l`;
 
 const STORE_PREFIX = `bigtrip-localstorage`;
 const STORE_VER = `v12`;
