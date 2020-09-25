@@ -76,7 +76,7 @@ export default class TripDay {
   }
 
   _clearEvents() {
-    Object.values(this._eventPresenters).forEach(function (eventPresenter) {
+    Object.values(this._eventPresenters).forEach((eventPresenter) => {
       eventPresenter.destroy();
     });
     this._eventPresenters = {};
